@@ -1,17 +1,5 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ProfilePage(),
-    );
-  }
-}
+import 'ubahprofile.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -22,7 +10,9 @@ class ProfilePage extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context); // Kembali ke halaman sebelumnya
+          },
         ),
         actions: [
           IconButton(
@@ -34,28 +24,34 @@ class ProfilePage extends StatelessWidget {
       body: Column(
         children: [
           SizedBox(height: 20),
-          // Profile picture
           CircleAvatar(
             radius: 50,
             backgroundImage: NetworkImage(
-              'https://your-image-url-here.com', // Replace with your image URL
+              'https://media.licdn.com/dms/image/v2/D5603AQEh91D9scCDiw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1721730196006?e=1732752000&v=beta&t=2sLe8Tg8FJulTxBI_90T1V4GEcDhVqnPPrdwtTAyH9k',
             ),
           ),
           SizedBox(height: 20),
-          // User name
           Text(
-            'Fadhlurohman Al Farabi',
+            'Azka Kasmito Putra',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           SizedBox(height: 40),
-          // Menu buttons
+          
+          // Navigasi ke halaman ubah profil
           MenuButton(
             icon: Icons.edit,
             label: 'Ubah Profil',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UbahProfilePage(), // Navigasi ke halaman Ubah Profil
+                ),
+              );
+            },
           ),
           MenuButton(
             icon: Icons.bug_report,

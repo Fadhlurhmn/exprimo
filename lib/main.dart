@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'profile.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -11,11 +11,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false, 
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Selamat datang di aplikasi saya'),
+      home: const MyHomePage(title: 'Exprimo'),
     );
   }
 }
@@ -38,6 +39,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // Function to navigate to profile page
+  void _goToProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfilePage()), // Pindah ke halaman ProfilePage
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,21 +58,17 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
+            const Text(
+              'You have pushed the button this many times:',
+            ),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20), // Beri jarak sebelum tombol
             ElevatedButton(
-              onPressed: () {
-                // Navigasi ke halaman profil
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
-                );
-              },
-              child: Text('Buka Profil'),
+              onPressed: _goToProfile, // Pindah ke halaman profil saat tombol ditekan
+              child: const Text("Go to Profile"),
             ),
           ],
         ),
@@ -72,134 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman utama
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {},
-          )
-        ],
-      ),
-      body: Column(
-        children: [
-          SizedBox(height: 20),
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: NetworkImage(
-              'https://your-image-url-here.com', // Ganti dengan URL gambar profil
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Azka Kasmito Putra',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 40),
-          MenuButton(
-            icon: Icons.edit,
-            label: 'Ubah Profil',
-            onTap: () {},
-          ),
-          MenuButton(
-            icon: Icons.bug_report,
-            label: 'Laporkan bug',
-            onTap: () {},
-          ),
-          MenuButton(
-            icon: Icons.logout,
-            label: 'Keluar',
-            onTap: () {},
-            isLogout: true,
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.folder),
-            label: 'Files',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MenuButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool isLogout;
-
-  const MenuButton({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.isLogout = false,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isLogout ? Colors.red[50] : Colors.pink[50],
-          foregroundColor: isLogout ? Colors.red : Colors.black,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        onPressed: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          child: Row(
-            children: [
-              Icon(icon, color: isLogout ? Colors.red : Colors.black),
-              SizedBox(width: 20),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Icon(Icons.arrow_forward_ios, size: 16),
-            ],
-          ),
-        ),
       ),
     );
   }
