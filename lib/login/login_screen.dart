@@ -3,6 +3,7 @@
 import 'package:exprimo/constants.dart';
 import 'package:exprimo/homepage_screen.dart';
 import 'package:exprimo/login/forgot_password.dart';
+import 'package:exprimo/navigation.dart';
 import 'package:exprimo/register/register_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -236,7 +237,7 @@ class LoginScreen extends StatelessWidget {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => Homepage()));
+                                  builder: (context) => Navigation_menu()));
                         },
                         child: Text(
                           'Login',
