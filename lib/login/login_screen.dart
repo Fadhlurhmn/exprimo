@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sort_child_properties_last
 
 import 'package:exprimo/constants.dart';
+import 'package:exprimo/homepage_screen.dart';
 import 'package:exprimo/login/forgot_password.dart';
 import 'package:exprimo/register/register_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,8 @@ class LoginScreen extends StatelessWidget {
             // Menampilkan gambar
             Positioned(
               top: 90, // Jarak atas untuk gambar
-              left: (size.width * 0.5) - (size.width * 0.6 / 2), // Pusatkan gambar
+              left: (size.width * 0.5) -
+                  (size.width * 0.6 / 2), // Pusatkan gambar
               child: Image.asset(
                 "assets/images/smile.png",
                 width: size.width * 0.6, // Mengatur lebar gambar
@@ -94,7 +96,9 @@ class LoginScreen extends StatelessWidget {
                         backgroundColor: secondaryColor,
                         foregroundColor: primaryColor,
                         padding: EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), // Membuat sudut kotak
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Membuat sudut kotak
                         ),
                       ),
                     ),
@@ -109,20 +113,23 @@ class LoginScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      child: Text('Register',
-                      style: TextStyle(
-                        color: Color(0xFFD19F9F),
-                        fontSize: 20,
-                        fontFamily: 'Nunito',
-                        fontWeight: FontWeight.w400,
-                        height: 0,
-                      ),
+                      child: Text(
+                        'Register',
+                        style: TextStyle(
+                          color: Color(0xFFD19F9F),
+                          fontSize: 20,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w400,
+                          height: 0,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: secondaryColor,
                         padding: EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), // Membuat sudut kotak
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Membuat sudut kotak
                         ),
                       ),
                     ),
@@ -141,33 +148,37 @@ class LoginScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: secondaryColor, // Warna kotak
                 ),
-                
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 50), // Jarak antara kolom username dan password
+                    SizedBox(
+                        height: 50), // Jarak antara kolom username dan password
                     // Mengatur ukuran kotak teks
                     Container(
-                      
                       width: size.width * 0.8, // Mengatur lebar kolom input
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Masukkan username',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10), // Sudut membulat pada border
+                            borderRadius: BorderRadius.circular(
+                                10), // Sudut membulat pada border
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
                           filled: true,
                           fillColor: Colors.white, // Warna latar belakang kolom
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0), // Jarak ikon
-                            child: Image.asset("assets/icons/Person.png"), // Ganti dengan path ikon yang sesuai
+                            child: Image.asset(
+                                "assets/icons/Person.png"), // Ganti dengan path ikon yang sesuai
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 30), // Jarak antara kolom username dan password
-                    
+                    SizedBox(
+                        height: 30), // Jarak antara kolom username dan password
+
                     Container(
                       width: size.width * 0.8, // Mengatur lebar kolom input
                       child: TextField(
@@ -175,14 +186,17 @@ class LoginScreen extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: 'Masukkan password',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10), // Sudut membulat pada border
+                            borderRadius: BorderRadius.circular(
+                                10), // Sudut membulat pada border
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
                           filled: true,
                           fillColor: Colors.white,
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0), // Jarak ikon
-                            child: Image.asset("assets/icons/Lock.png"), // Ganti dengan path ikon yang sesuai
+                            child: Image.asset(
+                                "assets/icons/Lock.png"), // Ganti dengan path ikon yang sesuai
                           ),
                         ),
                       ),
@@ -190,32 +204,39 @@ class LoginScreen extends StatelessWidget {
                     SizedBox(height: 10), // Jarak sebelum tombol lupa password
                     // Tautan Lupa Password
                     Align(
-                      alignment: Alignment.centerRight, // Menyusun agar tombol berada di kanan
+                      alignment: Alignment
+                          .centerRight, // Menyusun agar tombol berada di kanan
                       child: TextButton(
                         onPressed: () {
                           // Aksi untuk menavigasi ke halaman lupa password
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ForgotPasswordScreen(), // Ganti dengan layar lupa password Anda
+                              builder: (context) =>
+                                  ForgotPasswordScreen(), // Ganti dengan layar lupa password Anda
                             ),
                           );
                         },
-                      child: Text(
-                        'Lupa Password?',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+                        child: Text(
+                          'Lupa Password?',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
-                    ),
                     ),
                     Container(
                       width: size.width * 0.8, // Mengatur lebar tombol
                       child: ElevatedButton(
                         onPressed: () {
                           // Aksi untuk tombol Login
-                          print('Login Pressed');
+                          // print('Login Pressed');
+                          // masuk ke homepage
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Homepage()));
                         },
                         child: Text(
                           'Login',
@@ -232,22 +253,19 @@ class LoginScreen extends StatelessWidget {
                           foregroundColor: secondaryColor,
                           padding: EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20), // Membuat sudut kotak
+                            borderRadius: BorderRadius.circular(
+                                20), // Membuat sudut kotak
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                
               ),
-              
             ),
-            
           ],
         ),
       ),
     );
   }
 }
-

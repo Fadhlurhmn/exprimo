@@ -20,7 +20,8 @@ class RegisterScreen extends StatelessWidget {
             // Menampilkan gambar
             Positioned(
               top: 90, // Jarak atas untuk gambar
-              left: (size.width * 0.5) - (size.width * 0.6 / 2), // Pusatkan gambar
+              left: (size.width * 0.5) -
+                  (size.width * 0.6 / 2), // Pusatkan gambar
               child: Image.asset(
                 "assets/images/smile.png",
                 width: size.width * 0.6, // Mengatur lebar gambar
@@ -93,7 +94,9 @@ class RegisterScreen extends StatelessWidget {
                         backgroundColor: primaryColor,
                         foregroundColor: secondaryColor,
                         padding: EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), // Membuat sudut kotak
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Membuat sudut kotak
                         ),
                       ),
                     ),
@@ -104,20 +107,23 @@ class RegisterScreen extends StatelessWidget {
                         // Aksi untuk tombol Register
                         print('Register Pressed');
                       },
-                      child: Text('Register',
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontSize: 20,
-                        fontFamily: 'Nunito',
-                        fontWeight: FontWeight.w400,
-                        height: 0,
-                      ),
+                      child: Text(
+                        'Register',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: 20,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w400,
+                          height: 0,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: secondaryColor,
                         foregroundColor: primaryColor,
                         padding: EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), // Membuat sudut kotak
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Membuat sudut kotak
                         ),
                       ),
                     ),
@@ -136,33 +142,37 @@ class RegisterScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: secondaryColor, // Warna kotak
                 ),
-                
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 30), // Jarak antara kolom username dan password
+                    SizedBox(
+                        height: 30), // Jarak antara kolom username dan password
                     // Mengatur ukuran kotak teks
                     Container(
-                      
                       width: size.width * 0.8, // Mengatur lebar kolom input
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Masukkan username',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10), // Sudut membulat pada border
+                            borderRadius: BorderRadius.circular(
+                                10), // Sudut membulat pada border
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
                           filled: true,
                           fillColor: Colors.white, // Warna latar belakang kolom
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0), // Jarak ikon
-                            child: Image.asset("assets/icons/Person.png"), // Ganti dengan path ikon yang sesuai
+                            child: Image.asset(
+                                "assets/icons/Person.png"), // Ganti dengan path ikon yang sesuai
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 15), // Jarak antara kolom username dan password
-                    
+                    SizedBox(
+                        height: 15), // Jarak antara kolom username dan password
+
                     Container(
                       width: size.width * 0.8, // Mengatur lebar kolom input
                       child: TextField(
@@ -170,20 +180,23 @@ class RegisterScreen extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: 'Masukkan password',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10), // Sudut membulat pada border
+                            borderRadius: BorderRadius.circular(
+                                10), // Sudut membulat pada border
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
                           filled: true,
                           fillColor: Colors.white,
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0), // Jarak ikon
-                            child: Image.asset("assets/icons/Lock.png"), // Ganti dengan path ikon yang sesuai
+                            child: Image.asset(
+                                "assets/icons/Lock.png"), // Ganti dengan path ikon yang sesuai
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 15), 
-                    
+                    SizedBox(height: 15),
+
                     Container(
                       width: size.width * 0.8, // Mengatur lebar kolom input
                       child: TextField(
@@ -191,20 +204,23 @@ class RegisterScreen extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: 'Masukkan password',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10), // Sudut membulat pada border
+                            borderRadius: BorderRadius.circular(
+                                10), // Sudut membulat pada border
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
                           filled: true,
                           fillColor: Colors.white,
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0), // Jarak ikon
-                            child: Image.asset("assets/icons/Lock.png"), // Ganti dengan path ikon yang sesuai
+                            child: Image.asset(
+                                "assets/icons/Lock.png"), // Ganti dengan path ikon yang sesuai
                           ),
                         ),
                       ),
                     ),
                     SizedBox(height: 30), // Jarak sebelum tombol lupa password
-                    
+
                     Container(
                       width: size.width * 0.8, // Mengatur lebar tombol
                       child: ElevatedButton(
@@ -227,22 +243,19 @@ class RegisterScreen extends StatelessWidget {
                           foregroundColor: secondaryColor,
                           padding: EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20), // Membuat sudut kotak
+                            borderRadius: BorderRadius.circular(
+                                20), // Membuat sudut kotak
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                
               ),
-              
             ),
-            
           ],
         ),
       ),
     );
   }
 }
-
