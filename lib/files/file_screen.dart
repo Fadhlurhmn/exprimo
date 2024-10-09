@@ -167,7 +167,17 @@ class _FilesPageState extends State<FilesPage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  'All(${_filteredFiles.length})',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                IconButton(onPressed: () {}, icon: Icon(Icons.sort)),
+              ],
+            ),
 
             // Daftar hasil pencarian widget file
             ListView.builder(
