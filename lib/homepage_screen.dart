@@ -1,4 +1,7 @@
+import 'package:exprimo/face_quest/face_quest_screen.dart';
+import 'package:exprimo/import_foto/import_foto_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:exprimo/live_scan/live_scan_screen.dart';
 
 class Homepage extends StatelessWidget {
   @override
@@ -47,17 +50,38 @@ class Homepage extends StatelessWidget {
                           IconWithLabel(
                             iconPath: 'assets/images/live_scanning_icon.png',
                             label: 'Live Scan',
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => liveScanPage(),
+                                ),
+                              );
+                            },
                           ),
                           IconWithLabel(
                             iconPath: 'assets/images/import_foto_icon.png',
                             label: 'Import Photo',
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => importFotoScreen(),
+                                ),
+                              );
+                            },
                           ),
                           IconWithLabel(
                             iconPath: 'assets/images/face_quest_icon.png',
                             label: 'Face Quest',
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FaceQuestScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
