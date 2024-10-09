@@ -1,3 +1,4 @@
+import 'package:exprimo/files/file_screen.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatelessWidget {
@@ -177,6 +178,31 @@ class Homepage extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 // Riwayat Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      'Riwayat',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    // TextButton(
+                    //   onPressed: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(builder: (context) => FilesPage()),
+                    //     );
+                    //   },
+                    //   child: Text('Selengkapnya'),
+                    //   style: TextButton.styleFrom(
+                    //     foregroundColor:
+                    //         Colors.grey[600], // Warna teks "Selengkapnya"
+                    //   ),
+                    // )
+                  ],
+                ),
                 // Daftar riwayat
                 ListView.builder(
                   shrinkWrap: true,
@@ -274,26 +300,6 @@ class Homepage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Halaman FilesPage
-class FilesPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Files Page'),
-    );
-  }
-}
-
-// Halaman ProfilePage
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile Page'),
     );
   }
 }

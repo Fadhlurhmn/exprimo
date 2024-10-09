@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:exprimo/homepage_screen.dart';
+import 'package:exprimo/files/file_screen.dart';
+import 'package:exprimo/profile/profile_screen.dart';
 
 class Navigation_menu extends StatefulWidget {
   @override
