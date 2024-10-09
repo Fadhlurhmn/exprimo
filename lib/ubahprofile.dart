@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'ubahusername.dart';  // Import halaman ubahusername
+import 'ubahemail.dart';  // Import halaman ubahemail
 
-class UbahProfilePage extends StatelessWidget {  // UbahProfilePage digunakan sebagai nama untuk navigasi
+class UbahProfilePage extends StatelessWidget {
+  final String currentUsername = 'Azka Kasmito Putra';  // Username yang ada di halaman profil
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,11 +72,29 @@ class UbahProfilePage extends StatelessWidget {  // UbahProfilePage digunakan se
           // Username, Email, Password
           ProfileItem(
             label: 'Username',
-            value: 'Azka Kasmito Putra',
+            value: currentUsername,  // Gunakan currentUsername untuk ditampilkan
+            onTap: () {
+              // Pindah ke halaman ubahusername dengan data username
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditUsernamePage(username: currentUsername),
+                ),
+              );
+            },
           ),
           ProfileItem(
             label: 'Email',
             value: 'kelompok4uhuy@gmail.com',
+            onTap: () {
+              // Navigasi ke halaman ResetEmailPage (ubahemail.dart)
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ResetEmailPage(),  // Pindah ke halaman ubahemail.dart
+                ),
+              );
+            },
           ),
           ProfileItem(
             label: 'Password',
@@ -105,49 +127,54 @@ class UbahProfilePage extends StatelessWidget {  // UbahProfilePage digunakan se
 class ProfileItem extends StatelessWidget {
   final String label;
   final String value;
+  final VoidCallback? onTap;
 
   const ProfileItem({
     Key? key,
     required this.label,
     required this.value,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.pink[50], // Warna background sesuai desain
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+    return GestureDetector(
+      onTap: onTap,  // Aksi ketika item diklik
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.pink[50], // Warna background sesuai desain
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    SizedBox(height: 5),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Icon(Icons.arrow_forward_ios, size: 16),
-          ],
+              Icon(Icons.arrow_forward_ios, size: 16),
+            ],
+          ),
         ),
       ),
     );
