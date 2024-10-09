@@ -57,7 +57,6 @@ class _FilesPageState extends State<FilesPage> {
                     color: Colors.grey[600],
                   ),
                 ),
-                SizedBox(height: 8),
                 // Tombol share dan view
                 Row(
                   children: <Widget>[
@@ -68,10 +67,13 @@ class _FilesPageState extends State<FilesPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        minimumSize: Size(50, 30), // Set ukuran minimum
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8), // Adjust padding
                       ),
                       child: Text(
                         'Share',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                     SizedBox(width: 8),
@@ -82,10 +84,13 @@ class _FilesPageState extends State<FilesPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        minimumSize: Size(50, 30), // Set ukuran minimum
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8), // Adjust padding
                       ),
                       child: Text(
                         'View',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ],
