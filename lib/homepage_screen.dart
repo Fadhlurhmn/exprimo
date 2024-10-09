@@ -1,3 +1,4 @@
+import 'package:exprimo/constants.dart';
 import 'package:exprimo/face_quest/face_quest_screen.dart';
 import 'package:exprimo/import_foto/import_foto_screen.dart';
 import 'package:flutter/material.dart';
@@ -266,7 +267,7 @@ class Homepage extends StatelessWidget {
                                       ElevatedButton(
                                         onPressed: () {},
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.pink[100],
+                                          backgroundColor: secondaryColor,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(8),
@@ -287,7 +288,7 @@ class Homepage extends StatelessWidget {
                                       ElevatedButton(
                                         onPressed: () {},
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.pink[100],
+                                          backgroundColor: secondaryColor,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(8),
@@ -351,8 +352,8 @@ class IconWithLabel extends StatelessWidget {
         children: <Widget>[
           Image.asset(
             iconPath,
-            width: 80,
-            height: 80,
+            width: 64,
+            height: 64,
           ),
           Text(
             label,

@@ -1,3 +1,4 @@
+import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
 
 class FilesPage extends StatefulWidget {
@@ -63,7 +64,7 @@ class _FilesPageState extends State<FilesPage> {
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink[100],
+                        backgroundColor: secondaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -80,7 +81,7 @@ class _FilesPageState extends State<FilesPage> {
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink[100],
+                        backgroundColor: secondaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

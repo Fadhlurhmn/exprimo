@@ -33,6 +33,9 @@ class _BottomNavExampleState extends State<Navigation_menu> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Index saat ini
         onTap: _onItemTapped, // Fungsi saat item dipilih
+        backgroundColor: Color(0xFFFFF4F4), // Warna latar belakang
+        selectedItemColor: Colors.pink[100], // Warna item yang dipilih
+        unselectedItemColor: Colors.grey, // Warna item yang tidak dipilih
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
