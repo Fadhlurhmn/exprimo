@@ -1,5 +1,4 @@
 import 'package:exprimo/constants.dart';
-import 'package:exprimo/login/login_screen.dart';
 import 'package:exprimo/welcome/welcome_screen.dart';
 import 'package:flutter/material.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
-import 'package:exprimo/homepage_screen.dart';
 import 'package:exprimo/login/forgot_password.dart';
+import 'package:exprimo/navigation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,7 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 15),
                             filled: true,
                             fillColor: Colors.white,
                             prefixIcon: Padding(
@@ -67,7 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 15),
                             filled: true,
                             fillColor: Colors.white,
                             prefixIcon: Padding(
@@ -100,7 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      SizedBox(height: size.height * 0.05), // Jarak sebelum tombol Login
+                      SizedBox(
+                          height:
+                              size.height * 0.05), // Jarak sebelum tombol Login
 
                       // Tombol Login di bagian bawah
                       Container(
@@ -113,7 +117,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             String alertMessage = '';
 
                             if (username.isEmpty && password.isEmpty) {
-                              alertMessage = "Silakan masukkan username dan password.";
+                              alertMessage =
+                                  "Silakan masukkan username dan password.";
                             } else if (username.isEmpty) {
                               alertMessage = "Silakan masukkan username.";
                             } else if (password.isEmpty) {
@@ -143,7 +148,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               // Aksi untuk tombol Login
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => Homepage()),
+                                MaterialPageRoute(
+                                    builder: (context) => Navigation_menu()),
                               );
                             }
                           },
@@ -185,5 +191,3 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 }
-
-

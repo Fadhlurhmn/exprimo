@@ -1,304 +1,295 @@
-import 'package:exprimo/files/file_screen.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              Container(
-                width: MediaQuery.of(context).size.width,
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.asset(
-                    'assets/images/infografis.png', // Ganti dengan path gambar Anda
-                    fit: BoxFit.cover,
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.asset(
+                      'assets/images/infografis.png', // Ganti dengan path gambar Anda
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.only(top: 202.0, left: 16.0, right: 16.0),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    padding: EdgeInsets.only(bottom: 6),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 202.0,
+                    left: 16.0,
+                    right: 16.0,
+                  ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      padding: EdgeInsets.only(bottom: 6),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFF4F4),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          IconWithLabel(
+                            iconPath: 'assets/images/live_scanning_icon.png',
+                            label: 'Live Scan',
+                            onPressed: () {},
+                          ),
+                          IconWithLabel(
+                            iconPath: 'assets/images/import_foto_icon.png',
+                            label: 'Import Photo',
+                            onPressed: () {},
+                          ),
+                          IconWithLabel(
+                            iconPath: 'assets/images/face_quest_icon.png',
+                            label: 'Face Quest',
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        'Ayo Lanjutkan Permainanmu🔥🔥',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Color(0xFFFFF4F4),
-                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: Offset(0, 3),
+                          color: Colors.grey.withOpacity(0.2),
+                          blurRadius: 8,
                         ),
                       ],
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        IconWithLabel(
-                          iconPath: 'assets/images/live_scanning_icon.png',
-                          label: 'Live Scan',
-                          onPressed: () {},
-                        ),
-                        IconWithLabel(
-                          iconPath: 'assets/images/import_foto_icon.png',
-                          label: 'Import Photo',
-                          onPressed: () {},
-                        ),
-                        IconWithLabel(
-                          iconPath: 'assets/images/face_quest_icon.png',
-                          label: 'Face Quest',
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              children: <Widget>[
-                SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      'Ayo Lanjutkan Permainanmu🔥🔥',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.grey[300]!,
-                                width: 2,
-                              ),
-                            ),
-                            child: Image.asset(
-                              'assets/images/image_marah.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                'Ekspresi Marah',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  fontFamily: 'Nunito',
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  width: 2,
                                 ),
                               ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Tingkat kesulitan : Mudah',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 12,
-                                  fontFamily: 'Nunito',
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 4, horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFE57373),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Incomplete',
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFD19F9F),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 34,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 10),
-                // Riwayat Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      'Riwayat',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    // TextButton(
-                    //   onPressed: () {
-                    //     Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(builder: (context) => FilesPage()),
-                    //     );
-                    //   },
-                    //   child: Text('Selengkapnya'),
-                    //   style: TextButton.styleFrom(
-                    //     foregroundColor:
-                    //         Colors.grey[600], // Warna teks "Selengkapnya"
-                    //   ),
-                    // )
-                  ],
-                ),
-                // Daftar riwayat
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: 5, // Contoh jumlah data
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          // Gambar
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              width: 64,
-                              height: 64,
                               child: Image.asset(
-                                'assets/images/image_happy.jpeg', // Contoh gambar
-                                fit: BoxFit.cover,
+                                'assets/images/image_marah.png',
+                                fit: BoxFit.contain,
                               ),
                             ),
-                          ),
-                          SizedBox(width: 16),
-                          // Deskripsi teks
-                          Expanded(
-                            child: Column(
+                            SizedBox(width: 12),
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  'PrimoScanner...-2024 11.04',
+                                  'Ekspresi Marah',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    fontFamily: 'Nunito',
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
+                                SizedBox(height: 4),
                                 Text(
-                                  '2024-09-16 10:54',
+                                  'Tingkat kesulitan : Mudah',
                                   style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                    fontFamily: 'Nunito',
                                     color: Colors.grey[600],
                                   ),
                                 ),
                                 SizedBox(height: 8),
-                                // Tombol share dan view
-                                Row(
-                                  children: <Widget>[
-                                    ElevatedButton(
-                                      onPressed: () {},
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.pink[100],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Share',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 4, horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFE57373),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'Incomplete',
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
                                     ),
-                                    SizedBox(width: 8),
-                                    ElevatedButton(
-                                      onPressed: () {},
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.pink[100],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'View',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
+                          ],
+                        ),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFD19F9F),
+                            shape: BoxShape.circle,
                           ),
-                          // Tombol delete
-                          IconButton(
+                          child: IconButton(
                             onPressed: () {},
-                            icon: Icon(Icons.delete_outline),
-                            color: Colors.grey[600],
+                            icon: Icon(
+                              Icons.play_arrow,
+                              color: Colors.white,
+                              size: 34,
+                            ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  // Riwayat Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        'Riwayat',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    );
-                  },
-                ),
-                // Bagian riwayat sudah ada, tetap sama
-              ],
+                    ],
+                  ),
+                  // Daftar riwayat
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: 5, // Contoh jumlah data
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            // Gambar
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 64,
+                                height: 64,
+                                child: Image.asset(
+                                  'assets/images/image_happy.jpeg', // Contoh gambar
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            // Deskripsi teks
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'PrimoScanner...-2024 11.04',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow:
+                                        TextOverflow.ellipsis, // Fixed overflow
+                                  ),
+                                  Text(
+                                    '2024-09-16 10:54',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  // Tombol share dan view
+                                  Row(
+                                    children: <Widget>[
+                                      ElevatedButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.pink[100],
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Share',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      ElevatedButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.pink[100],
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'View',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Tombol delete
+                            IconButton(
+                              onPressed: () {},
+                              icon: Icon(Icons.delete_outline),
+                              color: Colors.grey[600],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
