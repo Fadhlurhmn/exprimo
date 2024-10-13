@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             // Background Widget
-            const Background(),
+            Background(isLoginActive: true),
 
             // Kotak berwarna secondaryColor di bagian bawah
             Expanded(

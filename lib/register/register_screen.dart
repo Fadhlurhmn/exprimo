@@ -27,7 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           children: [
             // Background Widget
-            const Background(),
+            Background(isLoginActive: false),
 
             // Kotak berwarna secondaryColor di bagian bawah
             Expanded(
