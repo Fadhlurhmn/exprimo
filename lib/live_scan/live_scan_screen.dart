@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:exprimo/constants.dart';
+import 'package:exprimo/live_scan/display.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:math' as math;
@@ -25,19 +26,21 @@ class _LiveScanPageState extends State<LiveScanPage> {
     super.dispose();
   }
 
-  Future<File?> takePicture() async {
+  Future<String?> takePicture() async {
     Directory root = await getTemporaryDirectory();
     String directoryPath = '${root.path}/Guided_Camera';
-    await Directory(directoryPath).create(recursive: true);
+    await Directory(directoryPath).create(recursive: true); // Ensure directory exists
+
     String filePath = '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
     try {
-      await controller.takePicture();
+      XFile imageFile = await controller.takePicture();
+      await File(imageFile.path).copy(filePath); // Copy image to desired path
+      return filePath; // Return the new file path
     } catch (e) {
+      print('Error taking picture: $e'); // Log any errors
       return null;
     }
-
-    return File(filePath);
   }
 
   @override
@@ -81,14 +84,23 @@ class _LiveScanPageState extends State<LiveScanPage> {
                           ),
                           child: ElevatedButton(
                             onPressed: () async {
-                              await takePicture();
+                              String? imagePath = await takePicture();
+                              if (imagePath != null) {
+                                // Navigate to the new page to display the captured image
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DisplayImagePage(imagePath: imagePath),
+                                  ),
+                                );
+                              }
                             },
-                            
                             style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(), backgroundColor: Colors.transparent, // Membuat latar belakang tombol transparan
-                              shadowColor: Colors.transparent, // Menghilangkan bayangan tombol
+                              shape: CircleBorder(),
+                              backgroundColor: Colors.transparent, // Transparent background
+                              shadowColor: Colors.transparent, // No shadow
                             ),
-                            child: null, // Anda bisa menambahkan ikon di sini
+                            child: null, // Optional: Add an icon here
                           ),
                         ),
                       ),
