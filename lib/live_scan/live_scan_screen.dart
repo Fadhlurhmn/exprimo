@@ -55,15 +55,21 @@ class _LiveScanPageState extends State<LiveScanPage> {
                 Column(
                   children: [
                     SizedBox(height: 40),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20), // Set rounded corners
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.width * controller.value.aspectRatio,
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.rotationY(math.pi), // Flip front camera preview
-                          child: CameraPreview(controller),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 3), // Garis hitam
+                        borderRadius: BorderRadius.circular(20), // Sudut rounded
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18), // Sudut rounded untuk tampilan kamera
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.width * controller.value.aspectRatio,
+                          child: Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.rotationY(math.pi), // Flip front camera preview
+                            child: CameraPreview(controller),
+                          ),
                         ),
                       ),
                     ),

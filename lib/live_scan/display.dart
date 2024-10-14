@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -10,6 +9,9 @@ class DisplayImagePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mendapatkan lebar layar
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Hasil Scan'),
@@ -18,10 +20,26 @@ class DisplayImagePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi), // Mirroring effect
-              child: Image.file(File(imagePath)), // Display the captured image
+            Container(
+              width: screenWidth,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  // color: Colors.black, // Warna garis (border)
+                  // width: 3, // Ketebalan garis
+                ),
+                borderRadius: BorderRadius.circular(20), // Membuat border rounded
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18), // Set the rounded corner for the image
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi), // Mirroring effect
+                  child: Image.file(
+                    File(imagePath), // Display the captured image
+                    fit: BoxFit.cover, // Ensure the image fills the container
+                  ),
+                ),
+              ),
             ),
             SizedBox(height: 20),
             Container(
@@ -33,7 +51,7 @@ class DisplayImagePage extends StatelessWidget {
                 child: Text(
                   'Download',
                   style: TextStyle(
-                    color: blackColor,
+                    color: Colors.black,
                     fontSize: 24,
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w700,
@@ -41,7 +59,7 @@ class DisplayImagePage extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFF5DADA),
-                  foregroundColor: primaryColor,
+                  foregroundColor: Colors.black,
                   padding: EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
