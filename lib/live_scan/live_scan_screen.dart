@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:exprimo/constants.dart';
 import 'package:exprimo/live_scan/display.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -55,30 +54,34 @@ class _LiveScanPageState extends State<LiveScanPage> {
               children: [
                 Column(
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.width * controller.value.aspectRatio,
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(math.pi), // Balik tampilan kamera depan
-                        child: CameraPreview(controller),
+                    SizedBox(height: 40),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20), // Set rounded corners
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.width * controller.value.aspectRatio,
+                        child: Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.rotationY(math.pi), // Flip front camera preview
+                          child: CameraPreview(controller),
+                        ),
                       ),
                     ),
                     Container(
                       width: 120,
                       height: 120,
-                      margin: EdgeInsets.only(top: 80),
+                      margin: EdgeInsets.only(top: 65),
                       decoration: BoxDecoration(
-                        color: Color(0xFFF5DADA), // Warna tombol
+                        color: Color(0xFFF5DADA), // Button color
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.black, width: 1),
                       ),
                       child: Center(
                         child: Container(
-                          width: 90, // Diameter lingkaran putih
+                          width: 90, // Inner white circle diameter
                           height: 90,
                           decoration: BoxDecoration(
-                            color: Colors.white, // Warna lingkaran putih
+                            color: Colors.white, // White inner circle color
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.black, width: 1),
                           ),
@@ -86,7 +89,6 @@ class _LiveScanPageState extends State<LiveScanPage> {
                             onPressed: () async {
                               String? imagePath = await takePicture();
                               if (imagePath != null) {
-                                // Navigate to the new page to display the captured image
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
