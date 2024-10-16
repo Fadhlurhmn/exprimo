@@ -1,11 +1,52 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DisplayImagePage extends StatelessWidget {
   final String imagePath;
 
   DisplayImagePage({required this.imagePath});
+
+  Future<void> requestPermission(BuildContext context) async {
+    // Meminta izin untuk penyimpanan
+    if (await Permission.storage.request().isGranted) {
+      // Izin diberikan
+    } else {
+      // Tampilkan pesan bahwa izin tidak diberikan
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Izin penyimpanan tidak diberikan')),
+      );
+    }
+  }
+
+  Future<void> downloadImage(BuildContext context) async {
+    await requestPermission(context);
+    if (!await Permission.storage.isGranted) return; // Cek izin
+
+    try {
+      // Mendapatkan direktori Downloads
+      Directory? directory = await getExternalStorageDirectory();
+      String downloadsPath = '${directory!.path}/Download';
+      await Directory(downloadsPath).create(recursive: true); // Membuat folder jika belum ada
+
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.jpg';
+      String filePath = '$downloadsPath/$fileName';
+
+      // Menyalin file gambar ke lokasi baru
+      await File(imagePath).copy(filePath);
+
+      // Menampilkan notifikasi atau dialog berhasil
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gambar berhasil diunduh: $filePath')),
+      );
+    } catch (e) {
+      // Menampilkan notifikasi atau dialog gagal
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengunduh gambar: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,21 +64,13 @@ class DisplayImagePage extends StatelessWidget {
             Container(
               width: screenWidth,
               decoration: BoxDecoration(
-                border: Border.all(
-                  // color: Colors.black, // Warna garis (border)
-                  // width: 3, // Ketebalan garis
-                ),
                 borderRadius: BorderRadius.circular(20), // Membuat border rounded
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18), // Set the rounded corner for the image
-                child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(math.pi), // Mirroring effect
-                  child: Image.file(
-                    File(imagePath), // Display the captured image
-                    fit: BoxFit.cover, // Ensure the image fills the container
-                  ),
+                child: Image.file(
+                  File(imagePath), // Display the captured image
+                  fit: BoxFit.cover, // Ensure the image fills the container
                 ),
               ),
             ),
@@ -46,7 +79,7 @@ class DisplayImagePage extends StatelessWidget {
               width: 300, // Set the desired width for the button
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context); // Go back to the camera page
+                  downloadImage(context); // Call the download function
                 },
                 child: Text(
                   'Download',
