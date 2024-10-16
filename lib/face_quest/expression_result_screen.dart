@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:exprimo/face_quest/face_quest_screen.dart';
 import 'package:flutter/material.dart';
 
 class ExpressionResultScreen extends StatelessWidget {
@@ -57,7 +58,12 @@ class ExpressionResultScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: ElevatedButton(
               onPressed: () {
-                // Add logic for "Next" button here (e.g., navigate to the next task)
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FaceQuestScreen(),
+                  ),
+                );
               },
               child: Text('Next'),
               style: ElevatedButton.styleFrom(
