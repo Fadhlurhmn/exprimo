@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Controller untuk TextField
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>(); // Membuat GlobalKey untuk form
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             // Background Widget
-            const Background(),
+            Background(isLoginActive: true),
 
             // Kotak berwarna secondaryColor di bagian bawah
             Expanded(
@@ -33,147 +34,129 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: secondaryColor,
                 padding: EdgeInsets.symmetric(horizontal: size.width * 0.06),
                 child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(height: size.height * 0.05), // Jarak atas
-                      Container(
-                        width: size.width * 0.8,
-                        child: TextField(
-                          controller: usernameController,
-                          decoration: InputDecoration(
-                            hintText: 'Masukkan username',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 15),
-                            filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Image.asset("assets/icons/Person.png"),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: size.height * 0.03),
-                      Container(
-                        width: size.width * 0.8,
-                        child: TextField(
-                          controller: passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            hintText: 'Masukkan password',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 15),
-                            filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Image.asset("assets/icons/Lock.png"),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Tautan Lupa Password
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ForgotPasswordScreen(),
+                  child: Form(
+                    key: _formKey, // Menggunakan form key untuk validasi
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(height: size.height * 0.05), // Jarak atas
+                        Container(
+                          width: size.width * 0.8,
+                          child: TextFormField(
+                            controller: usernameController,
+                            decoration: InputDecoration(
+                              hintText: 'Masukkan username',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            );
-                          },
-                          child: Text(
-                            'Lupa Password?',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: size.width * 0.04,
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 15),
+                              filled: true,
+                              fillColor: Colors.white,
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset("assets/icons/Person.png"),
+                              ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harap masukkan username.';
+                              }
+                              return null;
+                            },
                           ),
                         ),
-                      ),
+                        SizedBox(height: size.height * 0.03),
+                        Container(
+                          width: size.width * 0.8,
+                          child: TextFormField(
+                            controller: passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              hintText: 'Masukkan password',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 15),
+                              filled: true,
+                              fillColor: Colors.white,
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset("assets/icons/Lock.png"),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harap masukkan password.';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
 
-                      SizedBox(
-                          height:
-                              size.height * 0.05), // Jarak sebelum tombol Login
-
-                      // Tombol Login di bagian bawah
-                      Container(
-                        width: size.width * 0.8,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Cek apakah username dan password diisi
-                            String username = usernameController.text.trim();
-                            String password = passwordController.text.trim();
-                            String alertMessage = '';
-
-                            if (username.isEmpty && password.isEmpty) {
-                              alertMessage =
-                                  "Silakan masukkan username dan password.";
-                            } else if (username.isEmpty) {
-                              alertMessage = "Silakan masukkan username.";
-                            } else if (password.isEmpty) {
-                              alertMessage = "Silakan masukkan password.";
-                            }
-
-                            if (alertMessage.isNotEmpty) {
-                              // Tampilkan dialog jika username atau password belum diisi
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text("Peringatan"),
-                                    content: Text(alertMessage),
-                                    actions: [
-                                      TextButton(
-                                        child: Text("OK"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            } else {
-                              // Aksi untuk tombol Login
+                        // Tautan Lupa Password
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => Navigation_menu()),
+                                  builder: (context) => ForgotPasswordScreen(),
+                                ),
                               );
-                            }
-                          },
-                          child: Text(
-                            'Login',
-                            style: TextStyle(
-                              color: secondaryColor,
-                              fontSize: 20,
-                              fontFamily: 'Nunito',
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: secondaryColor,
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                            },
+                            child: Text(
+                              'Lupa Password?',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: size.width * 0.04,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: size.height * 0.03), // Jarak bawah
-                    ],
+
+                        SizedBox(
+                            height:
+                                size.height * 0.05), // Jarak sebelum tombol Login
+
+                        // Tombol Login di bagian bawah
+                        Container(
+                          width: size.width * 0.8,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                // Aksi untuk tombol Login
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Navigation_menu()),
+                                );
+                              }
+                            },
+                            child: Text(
+                              'Login',
+                              style: TextStyle(
+                                color: secondaryColor,
+                                fontSize: 20,
+                                fontFamily: 'Nunito',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: secondaryColor,
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: size.height * 0.03), // Jarak bawah
+                      ],
+                    ),
                   ),
                 ),
               ),

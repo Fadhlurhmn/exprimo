@@ -4,22 +4,21 @@ import 'package:exprimo/constants.dart';
 import 'package:exprimo/register/register_screen.dart';
 
 class Background extends StatefulWidget {
-  const Background({Key? key}) : super(key: key);
+  final bool isLoginActive;
+
+  const Background({Key? key, this.isLoginActive = true}) : super(key: key);
 
   @override
   _BackgroundState createState() => _BackgroundState();
 }
 
 class _BackgroundState extends State<Background> {
-  // Variabel untuk menyimpan status tombol yang aktif
-  bool isLoginActive = true; // Default ke login
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
     return Container(
-      height: size.height * 0.5, // Atur tinggi untuk menghindari unbounded
+      height: size.height * 0.5,
       child: Column(
         children: [
           // Bagian atas dengan teks dan logo
@@ -68,9 +67,6 @@ class _BackgroundState extends State<Background> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    setState(() {
-                      isLoginActive = true; // Set ke Login
-                    });
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -81,14 +77,14 @@ class _BackgroundState extends State<Background> {
                   child: Text(
                     'Login',
                     style: TextStyle(
-                      color: isLoginActive ? Colors.white : Colors.black, // Ubah warna teks berdasarkan status
+                      color: widget.isLoginActive ? Colors.white : Colors.black,
                       fontSize: size.width * 0.05,
                       fontFamily: 'Nunito',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isLoginActive ? secondaryColor : Colors.white, // Ubah warna background
+                    backgroundColor: widget.isLoginActive ? secondaryColor : Colors.white,
                     padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
@@ -105,9 +101,6 @@ class _BackgroundState extends State<Background> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    setState(() {
-                      isLoginActive = false; // Set ke Register
-                    });
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -118,14 +111,14 @@ class _BackgroundState extends State<Background> {
                   child: Text(
                     'Register',
                     style: TextStyle(
-                      color: isLoginActive ? Colors.black : Colors.white, // Ubah warna teks berdasarkan status
+                      color: widget.isLoginActive ? Colors.black : Colors.white,
                       fontSize: size.width * 0.05,
                       fontFamily: 'Nunito',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isLoginActive ? Colors.white : secondaryColor, // Ubah warna background
+                    backgroundColor: widget.isLoginActive ? Colors.white : secondaryColor,
                     padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
@@ -145,4 +138,3 @@ class _BackgroundState extends State<Background> {
     );
   }
 }
-
