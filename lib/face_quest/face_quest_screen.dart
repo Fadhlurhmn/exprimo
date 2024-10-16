@@ -1,3 +1,4 @@
+import 'package:exprimo/face_quest/expression_result_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
@@ -79,6 +80,18 @@ class _CameraScreenState extends State<CameraScreen> {
       setState(() {
         _capturedImage = File(image.path);
       });
+
+      // After capturing, navigate to the result screen and pass the image
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ExpressionResultScreen(
+            imageFile: _capturedImage!,
+            detectedExpression:
+                'Happy', // Replace this with actual detected expression logic
+          ),
+        ),
+      );
+      
     } catch (e) {
       print('Error capturing image: $e');
     }
@@ -99,7 +112,7 @@ class _CameraScreenState extends State<CameraScreen> {
             child: Center(
               child: Text(
                 '🙂',
-                style: TextStyle(fontSize: 100),
+                style: TextStyle(fontSize: 50),
               ),
             ),
           ),
