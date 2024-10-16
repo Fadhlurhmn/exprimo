@@ -193,7 +193,13 @@ class Homepage extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => CameraScreen()),
+                              );
+                            },
                             icon: Icon(
                               Icons.play_arrow,
                               color: Colors.white,
