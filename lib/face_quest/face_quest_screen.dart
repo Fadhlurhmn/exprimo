@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'dart:io';
 
 class FaceQuestScreen extends StatelessWidget {
   @override
@@ -20,63 +21,108 @@ class FaceQuestScreen extends StatelessWidget {
 }
 
 class CameraScreen extends StatefulWidget {
-  final CameraDescription camera;
-
-  const CameraScreen({Key? key, required this.camera}) : super(key: key);
+  const CameraScreen({Key? key}) : super(key: key);
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
 
 class _CameraScreenState extends State<CameraScreen> {
-  late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
+  late List<CameraDescription> cameras;
+  CameraController? _controller;
+  int _selectedCameraIndex = 0;
+  File? _capturedImage;
 
   @override
   void initState() {
     super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    cameras = await availableCameras();
+    _setCamera(_selectedCameraIndex);
+  }
+
+  void _setCamera(int cameraIndex) {
+    if (_controller != null) {
+      _controller!.dispose();
+    }
     _controller = CameraController(
-      widget.camera,
+      cameras[cameraIndex],
       ResolutionPreset.medium,
     );
-    _initializeControllerFuture = _controller.initialize();
+
+    _controller!.initialize().then((_) {
+      if (!mounted) return;
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
+  }
+
+  void _toggleCamera() {
+    _selectedCameraIndex = (_selectedCameraIndex + 1) % cameras.length;
+    _setCamera(_selectedCameraIndex);
+  }
+
+  Future<void> _captureImage() async {
+    if (!_controller!.value.isInitialized) {
+      return;
+    }
+    try {
+      final image = await _controller!.takePicture();
+      setState(() {
+        _capturedImage = File(image.path);
+      });
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text('Camera')),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Column(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Center(
-                    child: Text(
-                      '🙂',
-                      style: TextStyle(fontSize: 100),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: CameraPreview(_controller),
-                ),
-              ],
-            );
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+      body: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Text(
+                '🙂',
+                style: TextStyle(fontSize: 100),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: _capturedImage == null
+                ? CameraPreview(_controller!)
+                : Image.file(_capturedImage!),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: Icon(Icons.switch_camera),
+                onPressed: _toggleCamera,
+              ),
+              IconButton(
+                icon: Icon(Icons.camera),
+                onPressed: _captureImage,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -267,24 +313,13 @@ class ExpressionListItem extends StatelessWidget {
                   foregroundColor: Colors.black,
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 ),
-                onPressed: () async {
+                onPressed: () {
                   Navigator.of(context).pop();
-
-                  try {
-                    final cameras = await availableCameras();
-                    final firstCamera = cameras.first;
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => CameraScreen(camera: firstCamera),
-                      ),
-                    );
-                  } catch (e) {
-                    print('Error accessing camera: $e');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to access camera')),
-                    );
-                  }
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CameraScreen(),
+                    ),
+                  );
                 },
               ),
             ],
