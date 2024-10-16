@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile.dart';
+// import 'importfoto.dart';  // Tambahkan import untuk halaman SelectPhotoPage
+
 void main() {
   runApp(const MyApp());
 }
@@ -19,7 +21,6 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'Exprimo'),
     );
   }
-  
 }
 
 class MyHomePage extends StatefulWidget {
@@ -48,6 +49,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  // // Function to navigate to select photo page
+  // void _goToSelectPhoto() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => SelectPhotoPage()), // Pindah ke halaman SelectPhotoPage
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,6 +80,11 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _goToProfile, // Pindah ke halaman profil saat tombol ditekan
               child: const Text("Go to Profile"),
             ),
+            // const SizedBox(height: 20), // Jarak antara tombol profil dan tombol import foto
+            // ElevatedButton(
+            //   onPressed: _goToSelectPhoto, // Pindah ke halaman import foto saat tombol ditekan
+            //   child: const Text("Go to Import Foto"),
+            // ),
           ],
         ),
       ),

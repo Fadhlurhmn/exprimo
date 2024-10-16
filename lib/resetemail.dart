@@ -1,22 +1,20 @@
-import 'package:flutter/material.dart'; 
-import 'resetemail.dart'; // Import halaman ResetEmailPage
+import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
+class ResetEmailPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: KonfirmasiPasswordPage(), // Ganti nama halaman agar lebih deskriptif
-    );
-  }
+  _ResetEmailPageState createState() => _ResetEmailPageState();
 }
 
-class KonfirmasiPasswordPage extends StatelessWidget {
-  final TextEditingController _passwordController = TextEditingController();
+class _ResetEmailPageState extends State<ResetEmailPage> {
+  final TextEditingController _emailController = TextEditingController();
+  bool isButtonEnabled = false; // Untuk mengatur state tombol aktif atau tidak
+
+  // Fungsi untuk mengecek apakah email sudah diisi
+  void _checkEmailInput() {
+    setState(() {
+      isButtonEnabled = _emailController.text.isNotEmpty;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,35 +35,27 @@ class KonfirmasiPasswordPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 30),
             Text(
-              'Konfirmasi Password',
+              'Email',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 5),
-            Text(
-              'Masukkan password untuk mengganti email',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 20),
-            // TextField for Password Input
+            SizedBox(height: 10),
+            // TextField untuk input email baru
             TextField(
-              controller: _passwordController,
-              obscureText: true, // Hide the password
+              controller: _emailController,
+              onChanged: (text) => _checkEmailInput(), // Pantau inputan
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.lock), // Add lock icon
+                prefixIcon: Icon(Icons.email), // Ikon amplop
+                hintText: 'Enter your new email',
                 filled: true,
-                fillColor: Colors.pink[50],
+                fillColor: Colors.pink[50], // Warna latar belakang merah muda
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -76,24 +66,16 @@ class KonfirmasiPasswordPage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 50),
+            SizedBox(height: 30),
+            // Tombol Reset Email
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  // Aksi ketika tombol ditekan
-                  if (_passwordController.text.isNotEmpty) {
-                    // Jika password tidak kosong, navigasi ke halaman Reset Email
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ResetEmailPage(),
-                      ),
-                    );
-                  } else {
-                    // Jika password kosong, tampilkan pesan kesalahan (opsional)
-                    print('Password kosong, mohon masukkan password');
-                  }
-                },
+                onPressed: isButtonEnabled
+                    ? () {
+                        // Aksi ketika tombol ditekan dan aktif
+                        print('Email direset: ${_emailController.text}');
+                      }
+                    : null, // Tombol disable jika email kosong
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pink[300],
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
@@ -102,7 +84,7 @@ class KonfirmasiPasswordPage extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Konfirmasi Password',
+                  'Reset Email',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -116,4 +98,11 @@ class KonfirmasiPasswordPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: ResetEmailPage(),
+  ));
 }

@@ -91,7 +91,7 @@ class UbahProfilePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ResetEmailPage(),  // Pindah ke halaman ubahemail.dart
+                  builder: (context) => KonfirmasiPasswordPage(),  // Pindah ke halaman ubahemail.dart
                 ),
               );
             },
