@@ -68,9 +68,13 @@ class DisplayImagePage extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18), // Set the rounded corner for the image
-                child: Image.file(
-                  File(imagePath), // Display the captured image
-                  fit: BoxFit.cover, // Ensure the image fills the container
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(3.14159), // Membalikkan gambar horizontal
+                  child: Image.file(
+                    File(imagePath), // Display the captured image
+                    fit: BoxFit.cover, // Ensure the image fills the container
+                  ),
                 ),
               ),
             ),
