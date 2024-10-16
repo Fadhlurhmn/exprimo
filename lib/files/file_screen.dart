@@ -175,7 +175,33 @@ class _FilesPageState extends State<FilesPage> {
                   'All(${_filteredFiles.length})',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-                IconButton(onPressed: () {}, icon: Icon(Icons.sort)),
+                IconButton(
+                    onPressed: () {},
+                    // onPressed: () {
+                    //   showModalBottomSheet<void>(
+                    //     context: context,
+                    //     builder: (BuildContext context) {
+                    //       return SizedBox(
+                    //         height: 200,
+                    //         child: Center(
+                    //           child: Column(
+                    //             mainAxisAlignment: MainAxisAlignment.center,
+                    //             mainAxisSize: MainAxisSize.min,
+                    //             children: <Widget>[
+                    //               TextButton(
+                    //                   onPressed: () {},
+                    //                   child: Text('Ascending')),
+                    //               TextButton(
+                    //                   onPressed: () {},
+                    //                   child: Text('Descending')),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       );
+                    //     },
+                    //   );
+                    // },
+                    icon: Icon(Icons.sort)),
               ],
             ),
 
