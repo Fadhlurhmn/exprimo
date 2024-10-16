@@ -69,8 +69,32 @@ class ForgotPasswordScreen extends StatelessWidget {
               ),
               onPressed: () {
                 String email = _emailController.text;
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NewPasswordPage()));
+                if (email.isEmpty) {
+                  // Tampilkan Alert jika email kosong
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Error'),
+                        content: Text('Please enter your email'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  // Navigate ke NewPasswordPage jika email tidak kosong
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NewPasswordPage()),
+                  );
+                }
               },
               child: Text(
                 'Reset Password',
