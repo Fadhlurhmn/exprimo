@@ -98,7 +98,7 @@ class UbahProfilePage extends StatelessWidget {
           ),
           ProfileItem(
             label: 'Password',
-            value: '********',
+            value: '',
           ),
         ],
       ),

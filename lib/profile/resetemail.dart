@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
-class ResetEmailPage extends StatefulWidget {
-  @override
-  _ResetEmailPageState createState() => _ResetEmailPageState();
+void main() {
+  runApp(MyApp());
 }
 
-class _ResetEmailPageState extends State<ResetEmailPage> {
-  final TextEditingController _emailController = TextEditingController();
-  bool isButtonEnabled = false; // Untuk mengatur state tombol aktif atau tidak
-
-  // Fungsi untuk mengecek apakah email sudah diisi
-  void _checkEmailInput() {
-    setState(() {
-      isButtonEnabled = _emailController.text.isNotEmpty;
-    });
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ResetEmailPage(),
+    );
   }
+}
+
+class ResetEmailPage extends StatelessWidget {
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -35,27 +36,35 @@ class _ResetEmailPageState extends State<ResetEmailPage> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 30),
             Text(
-              'Email',
+              'Konfirmasi Password',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 10),
-            // TextField untuk input email baru
+            SizedBox(height: 5),
+            Text(
+              'Masukkan password untuk mengganti email',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 20),
+            // TextField for Password Input
             TextField(
-              controller: _emailController,
-              onChanged: (text) => _checkEmailInput(), // Pantau inputan
+              controller: _passwordController,
+              obscureText: true, // Hide the password
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email), // Ikon amplop
-                hintText: 'Enter your new email',
+                prefixIcon: Icon(Icons.lock), // Add lock icon
                 filled: true,
-                fillColor: Colors.pink[50], // Warna latar belakang merah muda
+                fillColor: Colors.pink[50],
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -66,16 +75,13 @@ class _ResetEmailPageState extends State<ResetEmailPage> {
                 ),
               ),
             ),
-            SizedBox(height: 30),
-            // Tombol Reset Email
+            SizedBox(height: 50),
             Center(
               child: ElevatedButton(
-                onPressed: isButtonEnabled
-                    ? () {
-                        // Aksi ketika tombol ditekan dan aktif
-                        print('Email direset: ${_emailController.text}');
-                      }
-                    : null, // Tombol disable jika email kosong
+                onPressed: () {
+                  // Action for Reset Email button
+                  print('Reset Email dengan password: ${_passwordController.text}');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pink[300],
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
@@ -98,11 +104,4 @@ class _ResetEmailPageState extends State<ResetEmailPage> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: ResetEmailPage(),
-  ));
 }
