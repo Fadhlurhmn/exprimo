@@ -1,3 +1,4 @@
+import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
 
 class FilesPage extends StatefulWidget {
@@ -57,35 +58,40 @@ class _FilesPageState extends State<FilesPage> {
                     color: Colors.grey[600],
                   ),
                 ),
-                SizedBox(height: 8),
                 // Tombol share dan view
                 Row(
                   children: <Widget>[
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink[100],
+                        backgroundColor: secondaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        minimumSize: Size(50, 30), // Set ukuran minimum
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8), // Adjust padding
                       ),
                       child: Text(
                         'Share',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                     SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink[100],
+                        backgroundColor: secondaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        minimumSize: Size(50, 30), // Set ukuran minimum
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8), // Adjust padding
                       ),
                       child: Text(
                         'View',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ],
@@ -161,7 +167,43 @@ class _FilesPageState extends State<FilesPage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  'All(${_filteredFiles.length})',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                IconButton(
+                    onPressed: () {},
+                    // onPressed: () {
+                    //   showModalBottomSheet<void>(
+                    //     context: context,
+                    //     builder: (BuildContext context) {
+                    //       return SizedBox(
+                    //         height: 200,
+                    //         child: Center(
+                    //           child: Column(
+                    //             mainAxisAlignment: MainAxisAlignment.center,
+                    //             mainAxisSize: MainAxisSize.min,
+                    //             children: <Widget>[
+                    //               TextButton(
+                    //                   onPressed: () {},
+                    //                   child: Text('Ascending')),
+                    //               TextButton(
+                    //                   onPressed: () {},
+                    //                   child: Text('Descending')),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       );
+                    //     },
+                    //   );
+                    // },
+                    icon: Icon(Icons.sort)),
+              ],
+            ),
 
             // Daftar hasil pencarian widget file
             ListView.builder(
