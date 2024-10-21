@@ -2,6 +2,7 @@ import 'package:exprimo/face_quest/expression_result_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
+import 'dart:math' as math; // Tambahkan ini untuk transformasi
 
 class FaceQuestScreen extends StatelessWidget {
   @override
@@ -11,7 +12,12 @@ class FaceQuestScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FaceQuestScreen(),
+              ),
+            );
           },
         ),
         title: Text('Face Quest'),
@@ -33,6 +39,8 @@ class _CameraScreenState extends State<CameraScreen> {
   CameraController? _controller;
   int _selectedCameraIndex = 0;
   File? _capturedImage;
+
+  get isFrontCamera => null;
 
   @override
   void initState() {
@@ -91,7 +99,6 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
         ),
       );
-      
     } catch (e) {
       print('Error capturing image: $e');
     }
@@ -102,6 +109,9 @@ class _CameraScreenState extends State<CameraScreen> {
     if (_controller == null || !_controller!.value.isInitialized) {
       return Center(child: CircularProgressIndicator());
     }
+
+    bool isFrontCamera = cameras[_selectedCameraIndex].lensDirection ==
+        CameraLensDirection.front;
 
     return Scaffold(
       appBar: AppBar(title: Text('Camera')),
@@ -119,7 +129,13 @@ class _CameraScreenState extends State<CameraScreen> {
           Expanded(
             flex: 2,
             child: _capturedImage == null
-                ? CameraPreview(_controller!)
+                ? Transform(
+                    alignment: Alignment.center,
+                    transform: isFrontCamera
+                        ? Matrix4.rotationY(math.pi)
+                        : Matrix4.identity(),
+                    child: CameraPreview(_controller!),
+                  )
                 : Image.file(_capturedImage!),
           ),
           Row(
