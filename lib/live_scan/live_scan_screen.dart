@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:exprimo/constants.dart';
 import 'package:exprimo/live_scan/display.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,123 +12,184 @@ class LiveScanPage extends StatefulWidget {
 }
 
 class _LiveScanPageState extends State<LiveScanPage> {
-  late CameraController controller;
+  late List<CameraDescription> cameras;
+  CameraController? _controller;
+  int _selectedCameraIndex = 1;
+  bool _isCameraInitialized = false;
 
-  Future<void> initializeCamera() async {
-    var cameras = await availableCameras();
-    controller = CameraController(cameras[1], ResolutionPreset.medium);
-    await controller.initialize();
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    cameras = await availableCameras();
+    if (cameras.isNotEmpty) {
+      _setCamera(_selectedCameraIndex);
+    } else {
+      print('No cameras found');
+    }
+  }
+
+  void _setCamera(int cameraIndex) async {
+    if (_controller != null) {
+      await _controller!.dispose();
+    }
+
+    _controller = CameraController(
+      cameras[cameraIndex],
+      ResolutionPreset.medium,
+    );
+
+    try {
+      await _controller!.initialize();
+      if (!mounted) return;
+      setState(() {
+        _isCameraInitialized = true;
+      });
+    } catch (e) {
+      print('Camera initialization error: $e');
+    }
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   Future<String?> takePicture() async {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      print('Controller not initialized');
+      return null;
+    }
+
     Directory root = await getTemporaryDirectory();
     String directoryPath = '${root.path}/Guided_Camera';
-    await Directory(directoryPath).create(recursive: true); // Ensure directory exists
+    await Directory(directoryPath).create(recursive: true);
 
     String filePath = '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
     try {
-      XFile imageFile = await controller.takePicture();
-      await File(imageFile.path).copy(filePath); // Copy image to desired path
-      return filePath; // Return the new file path
+      XFile imageFile = await _controller!.takePicture();
+      await File(imageFile.path).copy(filePath);
+      return filePath;
     } catch (e) {
-      print('Error taking picture: $e'); // Log any errors
+      print('Error taking picture: $e');
       return null;
     }
+  }
+
+  void _toggleCamera() {
+    _selectedCameraIndex = (_selectedCameraIndex + 1) % cameras.length;
+    _setCamera(_selectedCameraIndex);
+  }
+
+  void _goBack() {
+    Navigator.pop(context); // Navigasi kembali ke halaman sebelumnya
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: FutureBuilder(
-        future: initializeCamera(),
-        builder: (_, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Stack(
+      body: _isCameraInitialized
+          ? Stack(
               children: [
                 Column(
                   children: [
                     SizedBox(height: 40),
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 3), // Garis hitam
-                        borderRadius: BorderRadius.circular(20), // Sudut rounded
+                        border: Border.all(color: Colors.black, width: 3),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18), // Sudut rounded untuk tampilan kamera
+                        borderRadius: BorderRadius.circular(18),
                         child: SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.width * controller.value.aspectRatio,
+                          height: MediaQuery.of(context).size.width * _controller!.value.aspectRatio,
                           child: Transform(
                             alignment: Alignment.center,
-                            transform: Matrix4.rotationY(math.pi), // Flip front camera preview
-                            child: CameraPreview(controller),
+                            transform: Matrix4.rotationY(math.pi),
+                            child: CameraPreview(_controller!),
                           ),
                         ),
                       ),
                     ),
-                    Container(
-                      width: 120,
-                      height: 120,
-                      margin: EdgeInsets.only(top: 65),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF5DADA), // Button color
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.black, width: 1),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 90, // Inner white circle diameter
-                          height: 90,
+                    SizedBox(height: 30), // Spacing for the camera buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // Tombol Kembali
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_back,
+                            size: 50,
+                            color: secondaryColor,
+                          ),
+                          onPressed: _goBack,
+                        ),
+                        // Tombol Ambil Gambar
+                        Container(
+                          width: 120,
+                          height: 120,
+                          margin: EdgeInsets.only(top: 20),
                           decoration: BoxDecoration(
-                            color: Colors.white, // White inner circle color
+                            color: Color(0xFFF5DADA),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.black, width: 1),
                           ),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              String? imagePath = await takePicture();
-                              if (imagePath != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DisplayImagePage(imagePath: imagePath),
-                                  ),
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              backgroundColor: Colors.transparent, // Transparent background
-                              shadowColor: Colors.transparent, // No shadow
+                          child: Center(
+                            child: Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.black, width: 1),
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  String? imagePath = await takePicture();
+                                  if (imagePath != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DisplayImagePage(imagePath: imagePath),
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  shape: CircleBorder(),
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                ),
+                                child: null,
+                              ),
                             ),
-                            child: null, // Optional: Add an icon here
                           ),
                         ),
-                      ),
+                        // Tombol Ganti Kamera
+                        IconButton(
+                          icon: Icon(
+                            _selectedCameraIndex == 0 ? Icons.camera_front : Icons.camera_rear,
+                            size: 50,
+                            color: secondaryColor,
+                          ),
+                          onPressed: _toggleCamera,
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
-            );
-          } else {
-            return Center(
-              child: SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-        },
-      ),
+            )
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 }
