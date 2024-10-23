@@ -91,14 +91,14 @@ class UbahProfilePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ResetEmailPage(),  // Pindah ke halaman ubahemail.dart
+                  builder: (context) => UbahEmailPage(),  // Pindah ke halaman ubahemail.dart
                 ),
               );
             },
           ),
           ProfileItem(
             label: 'Password',
-            value: '',
+            value: '********',
           ),
         ],
       ),
