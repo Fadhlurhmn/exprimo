@@ -1,20 +1,7 @@
 import 'package:flutter/material.dart';
+import 'resetemail.dart'; // Import halaman reset email
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ResetEmailPage(),
-    );
-  }
-}
-
-class ResetEmailPage extends StatelessWidget {
+class UbahEmailPage extends StatelessWidget {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
@@ -79,8 +66,18 @@ class ResetEmailPage extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Action for Reset Email button
-                  print('Reset Email dengan password: ${_passwordController.text}');
+                  // Aksi untuk mengkonfirmasi password dan pindah halaman
+                  if (_passwordController.text == 'passwordBenar') { // Misalkan passwordnya 'passwordBenar'
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ResetEmailPage()), // Navigasi ke halaman ResetEmailPage
+                    );
+                  } else {
+                    // Tampilkan pesan error jika password salah
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Password salah!'))
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pink[300],
@@ -90,7 +87,7 @@ class ResetEmailPage extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Reset Email',
+                  'Konfirmasi Password',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -104,4 +101,11 @@ class ResetEmailPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: UbahEmailPage(),
+  ));
 }

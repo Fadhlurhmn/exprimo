@@ -56,7 +56,17 @@ class ProfilePage extends StatelessWidget {
           MenuButton(
             icon: Icons.bug_report,
             label: 'Laporkan bug',
-            onTap: () {},
+            onTap: () {
+              // Tampilkan modal untuk laporan bug
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true, // Untuk memungkinkan modal scroll ketika keyboard muncul
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) => BugReportModal(), // Modal lapor bug
+              );
+            },
           ),
           MenuButton(
             icon: Icons.logout,
@@ -133,6 +143,54 @@ class MenuButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class BugReportModal extends StatelessWidget {
+  final TextEditingController _reportController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20, // Menyelaraskan modal dengan keyboard
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // Agar modal mengikuti tinggi konten
+        children: [
+          SizedBox(height: 20),
+          Text(
+            'Isi laporan mu dibawah ini',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: _reportController,
+            maxLength: 255, // Batas maksimum karakter
+            decoration: InputDecoration(
+              hintText: 'laporan...',
+              filled: true,
+              fillColor: Colors.pink[50],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: Icon(Icons.cancel, color: Colors.grey),
+              onPressed: () {
+                Navigator.pop(context); // Tutup modal ketika ikon cancel ditekan
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
