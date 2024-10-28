@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "20862213943",
+    "project_id": "exprimo-865e6",
+    "storage_bucket": "exprimo-865e6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20862213943:android:ebe34144842e94f4db84b2",
+        "android_client_info": {
+          "package_name": "com.example.exprimo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1VRR44N4ZshSJxbk6ujFq8qIz2qFxEYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20862213943:android:5df16cc279233753db84b2",
+        "android_client_info": {
+          "package_name": "com.exprimo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1VRR44N4ZshSJxbk6ujFq8qIz2qFxEYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20862213943:android:322d2c665f4d313fdb84b2",
+        "android_client_info": {
+          "package_name": "exprimo.exprimo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1VRR44N4ZshSJxbk6ujFq8qIz2qFxEYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
