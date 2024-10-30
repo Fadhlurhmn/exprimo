@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '20862213943',
     projectId: 'exprimo-865e6',
     authDomain: 'exprimo-865e6.firebaseapp.com',
+    databaseURL: 'https://exprimo-865e6-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'exprimo-865e6.appspot.com',
   );
 
@@ -54,6 +55,7 @@ class DefaultFirebaseOptions {
     appId: '1:20862213943:android:322d2c665f4d313fdb84b2',
     messagingSenderId: '20862213943',
     projectId: 'exprimo-865e6',
+    databaseURL: 'https://exprimo-865e6-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'exprimo-865e6.appspot.com',
   );
 
@@ -62,6 +64,7 @@ class DefaultFirebaseOptions {
     appId: '1:20862213943:ios:1276a6e230ec4568db84b2',
     messagingSenderId: '20862213943',
     projectId: 'exprimo-865e6',
+    databaseURL: 'https://exprimo-865e6-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'exprimo-865e6.appspot.com',
     iosBundleId: 'com.example.exprimo',
   );
@@ -71,6 +74,7 @@ class DefaultFirebaseOptions {
     appId: '1:20862213943:ios:1276a6e230ec4568db84b2',
     messagingSenderId: '20862213943',
     projectId: 'exprimo-865e6',
+    databaseURL: 'https://exprimo-865e6-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'exprimo-865e6.appspot.com',
     iosBundleId: 'com.example.exprimo',
   );
@@ -81,6 +85,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '20862213943',
     projectId: 'exprimo-865e6',
     authDomain: 'exprimo-865e6.firebaseapp.com',
+    databaseURL: 'https://exprimo-865e6-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'exprimo-865e6.appspot.com',
   );
+
 }
