@@ -1,10 +1,16 @@
+import 'package:exprimo/model/userdata.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:exprimo/constants.dart';
+import 'package:exprimo/login/login_screen.dart';
 
 class NewPasswordPage extends StatelessWidget {
+  final String? userId; // Add userId parameter
   final TextEditingController _newPassword = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); // Membuat GlobalKey untuk form
+  final _formKey = GlobalKey<FormState>(); // GlobalKey for form validation
+
+  NewPasswordPage({this.userId}); // Constructor to accept userId
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +25,11 @@ class NewPasswordPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+        // Wrap the body with SingleChildScrollView
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Menggunakan form key untuk validasi
+          key: _formKey, // Use form key for validation
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -35,20 +42,22 @@ class NewPasswordPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                'Forgot Password',
+                'Set a New Password',
                 style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto'),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto',
+                ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 40),
               Text(
-                'Set a New Password',
+                'Please set a new password for your account',
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Inter'),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Inter',
+                ),
               ),
               SizedBox(height: 20),
               TextFormField(
@@ -63,7 +72,7 @@ class NewPasswordPage extends StatelessWidget {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Harap masukkan password baru';
+                    return 'Please enter a new password';
                   }
                   return null;
                 },
@@ -81,10 +90,10 @@ class NewPasswordPage extends StatelessWidget {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Harap konfirmasi password anda';
+                    return 'Please confirm your password';
                   }
                   if (value != _newPassword.text) {
-                    return 'Password tidak sama';
+                    return 'Passwords do not match';
                   }
                   return null;
                 },
@@ -92,23 +101,34 @@ class NewPasswordPage extends StatelessWidget {
               SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: secondaryColor, // Button color
+                  backgroundColor: secondaryColor,
                   padding: EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // Password valid dan sama, lakukan tindakan di sini (misalnya simpan password baru)
+                    // Update password in the database
+                    await updatePassword(userId, _newPassword.text);
+
+                    // Show success dialog
                     showDialog<String>(
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Berhasil'),
-                        content: const Text('Password berhasil diperbarui'),
+                        title: const Text('Success'),
+                        content: const Text(
+                            'Password has been updated successfully.'),
                         actions: <Widget>[
                           TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LoginScreen()),
+                              ); // Navigate to LoginScreen
+                            },
                             child: const Text('Ok'),
                           ),
                         ],
@@ -119,7 +139,10 @@ class NewPasswordPage extends StatelessWidget {
                 child: Text(
                   'Update Password',
                   style: TextStyle(
-                      fontSize: 16, color: Colors.white, fontFamily: 'Roboto'),
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontFamily: 'Roboto',
+                  ),
                 ),
               ),
             ],
@@ -127,5 +150,17 @@ class NewPasswordPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> updatePassword(String? userId, String newPassword) async {
+    if (userId != null) {
+      DatabaseReference userRef = database.ref("users/$userId");
+      try {
+        await userRef.update({'password': newPassword});
+        print("Password updated successfully for user $userId");
+      } catch (error) {
+        print("Failed to update password: $error");
+      }
+    }
   }
 }

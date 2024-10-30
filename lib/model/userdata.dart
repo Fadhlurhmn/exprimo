@@ -17,8 +17,8 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       'username': username,
-      'email' : email,
-      'password' : password,
+      'email': email,
+      'password': password,
     };
   }
 }
@@ -34,3 +34,27 @@ void tambahUser(User user) {
     print("Gagal menambahkan user: $error");
   });
 }
+
+void checkUserID(String email) {}
+
+
+
+// void changeUsername(String userId, String newUsername) {
+//   DatabaseReference userRef = database.ref("users/$userId");
+
+//   userRef.update({'username': newUsername}).then((_) {
+//     print("Username berhasil diubah!");
+//   }).catchError((error) {
+//     print("Gagal mengubah username: $error");
+//   });
+// }
+
+// void changeEmail(String userId, String newEmail, String password) {
+//   DatabaseReference userRef = database.ref("users/$userId", "users/$password");
+
+//   userRef.update({'email': newEmail}).then((_) {
+//     print("Email berhasil diubah!");
+//   }).catchError((error) {
+//     print("Gagal mengubah email: $error");
+//   });
+// }
