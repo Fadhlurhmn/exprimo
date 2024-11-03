@@ -32,6 +32,22 @@ String hashPassword(String password) {
   return digest.toString();
 }
 
+// Fungsi untuk memeriksa apakah username sudah ada di database
+Future<bool> checkUsernameExists(String username) async {
+  DatabaseReference usersRef = database.ref("users");
+  DatabaseEvent event = await usersRef.once();
+
+  if (event.snapshot.value != null) {
+    Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+    for (var user in users.values) {
+      if (user['username'] == username) {
+        return true; // Username sudah ada
+      }
+    }
+  }
+  return false; // Username tidak ada
+}
+
 // Fungsi untuk menambah user baru ke database
 void tambahUser(User user) async {
   DatabaseReference usersRef = database.ref("users");
@@ -40,6 +56,13 @@ void tambahUser(User user) async {
   bool emailExists = await checkEmailExists(user.email);
   if (emailExists) {
     print("Email sudah terdaftar. Gunakan email lain.");
+    return;
+  }
+
+  // Validasi username agar unik
+  bool usernameExists = await checkUsernameExists(user.username);
+  if (usernameExists) {
+    print("Username sudah terdaftar. Gunakan username lain.");
     return;
   }
 
