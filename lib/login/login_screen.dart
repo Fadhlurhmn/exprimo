@@ -1,8 +1,9 @@
+import 'package:exprimo/homepage_screen.dart';
+import 'package:exprimo/model/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
 import 'package:exprimo/login/forgot_password.dart';
-import 'package:exprimo/navigation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -117,22 +118,27 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        SizedBox(
-                            height:
-                                size.height * 0.05), // Jarak sebelum tombol Login
+                        SizedBox(height: size.height * 0.05), // Jarak sebelum tombol Login
 
                         // Tombol Login di bagian bawah
                         Container(
                           width: size.width * 0.8,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                // Aksi untuk tombol Login
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => Navigation_menu()),
-                                );
+                                // Memanggil fungsi login
+                                bool success = await login(usernameController.text, passwordController.text);
+                                if (success) {
+                                  // Aksi untuk tombol Login berhasil
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Homepage()),
+                                  );
+                                } else {
+                                  // Menampilkan alert dialog jika login gagal
+                                  _showErrorDialog("Username atau password salah.");
+                                }
                               }
                             },
                             child: Text(
@@ -163,6 +169,25 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Fungsi untuk menampilkan dialog kesalahan
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop(); // Menutup dialog
+            },
+            child: Text("OK"),
+          ),
+        ],
       ),
     );
   }

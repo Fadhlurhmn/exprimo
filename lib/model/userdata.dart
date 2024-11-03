@@ -70,6 +70,23 @@ Future<bool> checkEmailExists(String email) async {
   return false;
 }
 
+// Fungsi untuk memeriksa data login
+Future<bool> login(String username, String password) async {
+  String hashedPassword = hashPassword(password);
+  DatabaseReference usersRef = database.ref("users");
+  DatabaseEvent event = await usersRef.once();
+
+  if (event.snapshot.value != null) {
+    Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+    for (var user in users.values) {
+      if (user['username'] == username && user['password'] == hashedPassword) {
+        return true; // Login berhasil
+      }
+    }
+  }
+  return false; // Login gagal
+}
+
 // Fungsi untuk mendapatkan ID pengguna berdasarkan email
 Future<String?> getUserIdByEmail(String email) async {
   DatabaseReference usersRef = database.ref("users");
@@ -100,6 +117,8 @@ Future<void> changeUsername(String email, String newUsername) async {
     print("User dengan email tersebut tidak ditemukan.");
   }
 }
+
+
 
 // Fungsi untuk mengubah email pengguna dengan pengecekan email baru
 Future<void> changeEmail(String currentEmail, String newEmail) async {
