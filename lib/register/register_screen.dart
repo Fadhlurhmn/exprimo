@@ -1,8 +1,10 @@
+import 'package:exprimo/login/login_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
-import 'package:exprimo/homepage_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool isRegisterPressed;
@@ -115,22 +117,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Future<bool> checkEmailExists(String email) async {
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['email'] == email) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  String hashPassword(String password) {
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
   Widget _buildRegisterButton(BuildContext context) {
     return Container(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () async {
           if (_formKey.currentState!.validate()) {
-            // Simpan data user ke Firebase Realtime Database
+            bool emailExists = await checkEmailExists(emailController.text);
+            if (emailExists) {
+              // Menampilkan pop-up dialog jika email sudah terdaftar
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Email Sudah Terdaftar"),
+                    content: Text("Email yang Anda masukkan sudah terdaftar. Silakan gunakan email lain."),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("OK"),
+                      ),
+                    ],
+                  );
+                },
+              );
+              return; // Keluar dari fungsi jika email sudah ada
+            }
+
+            // Hashing password sebelum disimpan
+            String hashedPassword = hashPassword(passwordController.text);
+
+            // Simpan data user ke Firebase Realtime Database jika email belum ada
             await usersRef.push().set({
               "email": emailController.text,
               "username": usernameController.text,
-              "password": passwordController.text,
+              "password": hashedPassword, // Gunakan password yang sudah di-hash
             }).then((_) {
               print("User berhasil ditambahkan!");
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Homepage()),
+                MaterialPageRoute(builder: (context) => LoginScreen()),
               );
             }).catchError((error) {
               print("Gagal menambahkan user: $error");
