@@ -21,6 +21,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+  
+  String? emailError;
+  String? usernameError;
+  String? passwordError;
 
   @override
   Widget build(BuildContext context) {
@@ -46,14 +50,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: emailController,
                           hintText: 'Masukkan email',
                           icon: "assets/icons/Email.png",
-                          validatorMessage: 'Silakan masukkan email.',
+                          validator: _validateEmail,
+                          errorText: emailError,
                         ),
                         SizedBox(height: size.height * 0.01),
                         _buildTextField(
                           controller: usernameController,
                           hintText: 'Masukkan username',
                           icon: "assets/icons/Person.png",
-                          validatorMessage: 'Silakan masukkan username.',
+                          validator: _validateUsername,
+                          errorText: usernameError,
                         ),
                         SizedBox(height: size.height * 0.01),
                         _buildTextField(
@@ -61,7 +67,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Masukkan password',
                           icon: "assets/icons/Lock.png",
                           isPassword: true,
-                          validatorMessage: 'Silakan masukkan password.',
+                          validator: _validatePassword,
+                          errorText: passwordError,
                         ),
                         SizedBox(height: size.height * 0.05),
                         _buildRegisterButton(context),
@@ -78,42 +85,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Silakan masukkan email.';
+    }
+    if (!value.endsWith('@gmail.com')) {
+      return 'Masukkan email anda';
+    }
+    return null; // Jika valid
+  }
+
+  String? _validateUsername(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Silakan masukkan username.';
+    }
+    return null; // Jika valid
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Silakan masukkan password.';
+    }
+    if (value.length < 8) {
+      return 'Password harus terdiri dari minimal 8 karakter.';
+    }
+    return null; // Jika valid
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
     required String icon,
-    required String validatorMessage,
+    required String? Function(String?) validator,
     bool isPassword = false,
-    String? Function(String?)? additionalValidator,
+    String? errorText,
   }) {
-    return Container(
-      width: double.infinity,
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        decoration: InputDecoration(
-          hintText: hintText,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          filled: true,
-          fillColor: Colors.white,
-          prefixIcon: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset(icon),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          child: TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            decoration: InputDecoration(
+              hintText: hintText,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              filled: true,
+              fillColor: Colors.white,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(icon),
+              ),
+            ),
+            validator: validator,
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return validatorMessage;
-          }
-          if (additionalValidator != null) {
-            return additionalValidator(value);
-          }
-          return null;
-        },
-      ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0),
+            child: Text(
+              errorText,
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 
@@ -130,6 +169,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return false;
   }
 
+  Future<bool> checkUsernameExists(String username) async {
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['username'] == username) {
+          return true; // Username sudah ada
+        }
+      }
+    }
+    return false; // Username tidak ada
+  }
+
   String hashPassword(String password) {
     var bytes = utf8.encode(password);
     var digest = sha256.convert(bytes);
@@ -141,28 +193,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () async {
-          if (_formKey.currentState!.validate()) {
+          setState(() {
+            emailError = _validateEmail(emailController.text);
+            usernameError = _validateUsername(usernameController.text);
+            passwordError = _validatePassword(passwordController.text);
+          });
+
+          if (emailError == null && usernameError == null && passwordError == null) {
             bool emailExists = await checkEmailExists(emailController.text);
             if (emailExists) {
-              // Menampilkan pop-up dialog jika email sudah terdaftar
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Email Sudah Terdaftar"),
-                    content: Text("Email yang Anda masukkan sudah terdaftar. Silakan gunakan email lain."),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("OK"),
-                      ),
-                    ],
-                  );
-                },
-              );
+              setState(() {
+                emailError = 'Email yang Anda masukkan sudah terdaftar.';
+              });
               return; // Keluar dari fungsi jika email sudah ada
+            }
+
+            bool usernameExists = await checkUsernameExists(usernameController.text);
+            if (usernameExists) {
+              setState(() {
+                usernameError = 'Username yang Anda masukkan sudah terdaftar.';
+              });
+              return; // Keluar dari fungsi jika username sudah ada
             }
 
             // Hashing password sebelum disimpan
@@ -172,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             await usersRef.push().set({
               "email": emailController.text,
               "username": usernameController.text,
-              "password": hashedPassword, // Gunakan password yang sudah di-hash
+              "password": hashedPassword,
             }).then((_) {
               print("User berhasil ditambahkan!");
               Navigator.push(
