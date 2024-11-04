@@ -1,5 +1,6 @@
 import 'package:exprimo/homepage_screen.dart';
 import 'package:exprimo/model/userdata.dart';
+import 'package:exprimo/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
@@ -118,7 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        SizedBox(height: size.height * 0.05), // Jarak sebelum tombol Login
+                        SizedBox(
+                            height: size.height *
+                                0.05), // Jarak sebelum tombol Login
 
                         // Tombol Login di bagian bawah
                         Container(
@@ -127,17 +130,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 // Memanggil fungsi login
-                                bool success = await login(usernameController.text, passwordController.text);
+                                bool success = await login(
+                                    usernameController.text,
+                                    passwordController.text);
                                 if (success) {
                                   // Aksi untuk tombol Login berhasil
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => Homepage()),
+                                        builder: (context) =>
+                                            Navigation_menu()),
                                   );
                                 } else {
                                   // Menampilkan alert dialog jika login gagal
-                                  _showErrorDialog("Username atau password salah.");
+                                  _showErrorDialog(
+                                      "Username atau password salah.");
                                 }
                               }
                             },
