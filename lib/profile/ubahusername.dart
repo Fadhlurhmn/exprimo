@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class EditUsernamePage extends StatefulWidget {
   final String username;
@@ -12,6 +13,7 @@ class EditUsernamePage extends StatefulWidget {
 class _EditUsernamePageState extends State<EditUsernamePage> {
   late TextEditingController _usernameController;
   bool _isButtonEnabled = false;
+  final DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
 
   @override
   void initState() {
@@ -21,10 +23,28 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
     // Add listener to detect changes in the TextField
     _usernameController.addListener(() {
       setState(() {
-        // Enable button only if the username is changed
         _isButtonEnabled = _usernameController.text != widget.username;
       });
     });
+  }
+
+  Future<bool> checkUsernameExists(String username) async {
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['username'] == username) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  Future<void> updateUsername(String newUsername) async {
+    // Get the user ID (assuming you have it stored or passed along)
+    String userId = ""; // Replace with actual user ID
+    await usersRef.child(userId).update({"username": newUsername});
   }
 
   @override
@@ -65,7 +85,6 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
               ),
             ),
             SizedBox(height: 10),
-            // TextField for Username Input
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(
@@ -85,20 +104,28 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
             Center(
               child: ElevatedButton(
                 onPressed: _isButtonEnabled
-                    ? () {
-                        // Action for Reset Username button
-                        print('Reset Username: ${_usernameController.text}');
+                    ? () async {
+                        String newUsername = _usernameController.text;
+                        bool usernameExists = await checkUsernameExists(newUsername);
+
+                        if (!usernameExists) {
+                          await updateUsername(newUsername);
+                          print("Username updated successfully!");
+                          Navigator.pop(context);
+                        } else {
+                          print("Username already exists!");
+                        }
                       }
-                    : null, // Disable button if _isButtonEnabled is false
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isButtonEnabled ? Colors.pink[300] : Colors.grey, // Change button color when disabled
+                  backgroundColor: _isButtonEnabled ? Colors.pink[300] : Colors.grey,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: Text(
-                  'Reset Username',
+                  'Update Username',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white,
