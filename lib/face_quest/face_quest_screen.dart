@@ -1,8 +1,8 @@
-import 'package:exprimo/face_quest/expression_result_screen.dart';
+import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
-import 'dart:math' as math; // Tambahkan ini untuk transformasi
+import 'dart:math' as math;
 
 class FaceQuestScreen extends StatelessWidget {
   @override
@@ -12,147 +12,12 @@ class FaceQuestScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FaceQuestScreen(),
-              ),
-            );
+            Navigator.pop(context);
           },
         ),
         title: Text('Face Quest'),
       ),
       body: FaceQuestList(),
-    );
-  }
-}
-
-class CameraScreen extends StatefulWidget {
-  const CameraScreen({Key? key}) : super(key: key);
-
-  @override
-  _CameraScreenState createState() => _CameraScreenState();
-}
-
-class _CameraScreenState extends State<CameraScreen> {
-  late List<CameraDescription> cameras;
-  CameraController? _controller;
-  int _selectedCameraIndex = 0;
-  File? _capturedImage;
-
-  get isFrontCamera => null;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    cameras = await availableCameras();
-    _setCamera(_selectedCameraIndex);
-  }
-
-  void _setCamera(int cameraIndex) {
-    if (_controller != null) {
-      _controller!.dispose();
-    }
-    _controller = CameraController(
-      cameras[cameraIndex],
-      ResolutionPreset.medium,
-    );
-
-    _controller!.initialize().then((_) {
-      if (!mounted) return;
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  void _toggleCamera() {
-    _selectedCameraIndex = (_selectedCameraIndex + 1) % cameras.length;
-    _setCamera(_selectedCameraIndex);
-  }
-
-  Future<void> _captureImage() async {
-    if (!_controller!.value.isInitialized) {
-      return;
-    }
-    try {
-      final image = await _controller!.takePicture();
-      setState(() {
-        _capturedImage = File(image.path);
-      });
-
-      // After capturing, navigate to the result screen and pass the image
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ExpressionResultScreen(
-            imageFile: _capturedImage!,
-            detectedExpression:
-                'Happy', // Replace this with actual detected expression logic
-          ),
-        ),
-      );
-    } catch (e) {
-      print('Error capturing image: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    bool isFrontCamera = cameras[_selectedCameraIndex].lensDirection ==
-        CameraLensDirection.front;
-
-    return Scaffold(
-      appBar: AppBar(title: Text('Camera')),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: Text(
-                '🙂',
-                style: TextStyle(fontSize: 50),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: _capturedImage == null
-                ? Transform(
-                    alignment: Alignment.center,
-                    transform: isFrontCamera
-                        ? Matrix4.rotationY(math.pi)
-                        : Matrix4.identity(),
-                    child: CameraPreview(_controller!),
-                  )
-                : Image.file(_capturedImage!),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: Icon(Icons.switch_camera),
-                onPressed: _toggleCamera,
-              ),
-              IconButton(
-                icon: Icon(Icons.camera),
-                onPressed: _captureImage,
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
@@ -172,17 +37,21 @@ class _FaceQuestListState extends State<FaceQuestList> {
     ExpressionItem('Capek', 'Menengah', false),
   ];
 
-  String selectedDifficulty = 'Semua';
-  bool showCompleted = false;
+  String selectedFilter = 'Semua';
+
+  void _setSelectedFilter(String filter) {
+    setState(() {
+      selectedFilter = filter;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     List<ExpressionItem> filteredExpressions = expressions.where((item) {
-      if (selectedDifficulty != 'Semua' &&
-          item.difficulty != selectedDifficulty) {
-        return false;
-      }
-      if (!showCompleted && item.isComplete) {
+      if (selectedFilter == 'Completed') {
+        return item.isComplete;
+      } else if (selectedFilter != 'Semua' &&
+          item.difficulty != selectedFilter) {
         return false;
       }
       return true;
@@ -198,37 +67,53 @@ class _FaceQuestListState extends State<FaceQuestList> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              DropdownButton<String>(
-                value: selectedDifficulty,
-                items:
-                    <String>['Semua', 'Mudah', 'Menengah'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedDifficulty = newValue!;
-                  });
-                },
+              ElevatedButton(
+                onPressed: () => _setSelectedFilter('Semua'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  backgroundColor: selectedFilter == 'Semua'
+                      ? secondaryColor
+                      : const Color.fromARGB(255, 255, 255, 255),
+                  textStyle: TextStyle(fontSize: 12),
+                ),
+                child: Text('Semua'),
               ),
-              Row(
-                children: [
-                  Text('Tampilkan Selesai'),
-                  Switch(
-                    value: showCompleted,
-                    onChanged: (bool value) {
-                      setState(() {
-                        showCompleted = value;
-                      });
-                    },
-                  ),
-                ],
+              ElevatedButton(
+                onPressed: () => _setSelectedFilter('Mudah'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  backgroundColor: selectedFilter == 'Mudah'
+                      ? secondaryColor
+                      : const Color.fromARGB(255, 255, 254, 254),
+                  textStyle: TextStyle(fontSize: 12),
+                ),
+                child: Text('Mudah'),
+              ),
+              ElevatedButton(
+                onPressed: () => _setSelectedFilter('Menengah'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  backgroundColor: selectedFilter == 'Menengah'
+                      ? secondaryColor
+                      : const Color.fromARGB(255, 255, 255, 255),
+                  textStyle: TextStyle(fontSize: 12),
+                ),
+                child: Text('Menengah'),
+              ),
+              ElevatedButton(
+                onPressed: () => _setSelectedFilter('Completed'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  backgroundColor: selectedFilter == 'Completed'
+                      ? secondaryColor
+                      : const Color.fromARGB(255, 255, 255, 255),
+                  textStyle: TextStyle(fontSize: 12),
+                ),
+                child: Text('Completed'),
               ),
             ],
           ),
@@ -326,28 +211,24 @@ class ExpressionListItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Apakah yakin ingin memulai?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 20),
-              ElevatedButton(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.play_arrow),
-                    Text('PLAY NOW'),
-                    SizedBox(width: 15),
-                  ],
-                ),
+                  style: TextStyle(fontSize: 16)),
+              SizedBox(height: 8),
+              ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFD19F9F),
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  foregroundColor:
+                      Colors.black, // Set text and icon color to black
+                ),
+                label: Text("Mulai"),
+                icon: Icon(
+                  Icons.play_arrow,
+                  color: Colors.black,
                 ),
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => CameraScreen(),
-                    ),
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CameraScreen()),
                   );
                 },
               ),
@@ -365,4 +246,153 @@ class ExpressionItem {
   final bool isComplete;
 
   ExpressionItem(this.name, this.difficulty, this.isComplete);
+}
+
+class CameraScreen extends StatefulWidget {
+  const CameraScreen({Key? key}) : super(key: key);
+
+  @override
+  _CameraScreenState createState() => _CameraScreenState();
+}
+
+class _CameraScreenState extends State<CameraScreen> {
+  late List<CameraDescription> cameras;
+  CameraController? _controller;
+  int _selectedCameraIndex = 0;
+  File? _capturedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    cameras = await availableCameras();
+    _setCamera(_selectedCameraIndex);
+  }
+
+  void _setCamera(int cameraIndex) {
+    if (_controller != null) {
+      _controller!.dispose();
+    }
+    _controller = CameraController(
+      cameras[cameraIndex],
+      ResolutionPreset.medium,
+    );
+
+    _controller!.initialize().then((_) {
+      if (!mounted) return;
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _toggleCamera() {
+    _selectedCameraIndex = (_selectedCameraIndex + 1) % cameras.length;
+    _setCamera(_selectedCameraIndex);
+  }
+
+  Future<void> _captureImage() async {
+    if (!_controller!.value.isInitialized) {
+      return;
+    }
+    try {
+      final image = await _controller!.takePicture();
+      setState(() {
+        _capturedImage = File(image.path);
+      });
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ExpressionResultScreen(
+            imageFile: _capturedImage!,
+            detectedExpression: 'Happy',
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    bool isFrontCamera = cameras[_selectedCameraIndex].lensDirection ==
+        CameraLensDirection.front;
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Camera')),
+      body: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Text(
+                '🙂',
+                style: TextStyle(fontSize: 50),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: _capturedImage == null
+                ? Transform(
+                    alignment: Alignment.center,
+                    transform: isFrontCamera
+                        ? Matrix4.rotationY(math.pi)
+                        : Matrix4.identity(),
+                    child: CameraPreview(_controller!),
+                  )
+                : Image.file(_capturedImage!),
+          ),
+          ElevatedButton(
+            onPressed: _captureImage,
+            child: Text("Capture Image"),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _toggleCamera,
+        child: Icon(Icons.flip_camera_android),
+      ),
+    );
+  }
+}
+
+class ExpressionResultScreen extends StatelessWidget {
+  final File imageFile;
+  final String detectedExpression;
+
+  const ExpressionResultScreen(
+      {Key? key, required this.imageFile, required this.detectedExpression})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Expression Result'),
+      ),
+      body: Column(
+        children: [
+          Image.file(imageFile),
+          SizedBox(height: 16),
+          Text(
+            'Detected Expression: $detectedExpression',
+            style: TextStyle(fontSize: 18),
+          ),
+        ],
+      ),
+    );
+  }
 }
