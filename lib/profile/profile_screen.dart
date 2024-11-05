@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:exprimo/login/login_screen.dart';
 import 'ubahprofile.dart'; // Import halaman Ubah Profil
 
 class ProfilePage extends StatelessWidget {
@@ -36,8 +37,7 @@ class ProfilePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      UbahProfilePage(), // Navigasi ke halaman Ubah Profil
+                  builder: (context) => UbahProfilePage(),
                 ),
               );
             },
@@ -50,7 +50,14 @@ class ProfilePage extends StatelessWidget {
           MenuButton(
             icon: Icons.logout,
             label: 'Keluar',
-            onTap: () {},
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoginScreen(), // Navigate to LoginScreen
+                ),
+              );
+            },
             isLogout: true,
           ),
         ],
