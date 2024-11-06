@@ -2,7 +2,7 @@ import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
-import 'dart:math' as math;
+// import 'dart:math' as math;
 
 class FaceQuestScreen extends StatelessWidget {
   @override
@@ -216,8 +216,7 @@ class ExpressionListItem extends StatelessWidget {
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFD19F9F),
-                  foregroundColor:
-                      Colors.black, // Set text and icon color to black
+                  foregroundColor: Colors.black, // Set text and icon color
                 ),
                 label: Text("Mulai"),
                 icon: Icon(
@@ -349,7 +348,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 ? Transform(
                     alignment: Alignment.center,
                     transform: isFrontCamera
-                        ? Matrix4.rotationY(math.pi)
+                        ? Matrix4.rotationY(0)
                         : Matrix4.identity(),
                     child: CameraPreview(_controller!),
                   )
@@ -373,23 +372,27 @@ class ExpressionResultScreen extends StatelessWidget {
   final File imageFile;
   final String detectedExpression;
 
-  const ExpressionResultScreen(
-      {Key? key, required this.imageFile, required this.detectedExpression})
-      : super(key: key);
+  ExpressionResultScreen(
+      {required this.imageFile, required this.detectedExpression});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Expression Result'),
-      ),
+      appBar: AppBar(title: Text('Expression Result')),
       body: Column(
         children: [
-          Image.file(imageFile),
-          SizedBox(height: 16),
-          Text(
-            'Detected Expression: $detectedExpression',
-            style: TextStyle(fontSize: 18),
+          Expanded(
+            flex: 3,
+            child: Image.file(imageFile),
+          ),
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Text(
+                'Detected Expression: $detectedExpression',
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
           ),
         ],
       ),

@@ -1,9 +1,54 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'ubahusername.dart';  // Import halaman ubahusername
-import 'ubahemail.dart';  // Import halaman ubahemail
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'ubahusername.dart';
+import 'ubahemail.dart';
 
-class UbahProfilePage extends StatelessWidget {
-  final String currentUsername = 'Azka Kasmito Putra';  // Username yang ada di halaman profil
+class UbahProfilePage extends StatefulWidget {
+  @override
+  _UbahProfilePageState createState() => _UbahProfilePageState();
+}
+
+class _UbahProfilePageState extends State<UbahProfilePage> {
+  String currentUsername = 'Loading...';
+  String currentEmail = 'Loading...';
+  String currentPassword = '********';
+  File? _imageFile;
+  DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+
+    if (userId != null) {
+      DatabaseEvent event = await usersRef.child(userId).once();
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          currentUsername = userData['username'] ?? 'Unknown';
+          currentEmail = userData['email'] ?? 'Unknown';
+          currentPassword = '********';  // Masked for display
+        });
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +59,7 @@ class UbahProfilePage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context);  // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
         title: Text(
@@ -26,38 +71,41 @@ class UbahProfilePage extends StatelessWidget {
       body: Column(
         children: [
           SizedBox(height: 20),
-          
+
           // Profile Picture with Edit Icon
           Stack(
             alignment: Alignment.bottomRight,
             children: [
               CircleAvatar(
                 radius: 50,
-                backgroundImage: NetworkImage(
-                  'https://media.licdn.com/dms/image/v2/D5603AQEh91D9scCDiw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1721730196006?e=1732752000&v=beta&t=2sLe8Tg8FJulTxBI_90T1V4GEcDhVqnPPrdwtTAyH9k',
-                ),
+                backgroundImage: _imageFile != null
+                    ? FileImage(_imageFile!)
+                    : AssetImage('assets/placeholder_profile.png') as ImageProvider,
               ),
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: Container(
-                  padding: EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.edit,
-                    size: 20,
-                    color: Colors.grey,
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.edit,
+                      size: 20,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
-          
+
           SizedBox(height: 20),
-          
+
           // Profile Information Label
           Text(
             'Profile Information',
@@ -66,15 +114,14 @@ class UbahProfilePage extends StatelessWidget {
               color: Colors.grey[600],
             ),
           ),
-          
+
           SizedBox(height: 20),
-          
+
           // Username, Email, Password
           ProfileItem(
             label: 'Username',
-            value: currentUsername,  // Gunakan currentUsername untuk ditampilkan
+            value: currentUsername,
             onTap: () {
-              // Pindah ke halaman ubahusername dengan data username
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -85,37 +132,19 @@ class UbahProfilePage extends StatelessWidget {
           ),
           ProfileItem(
             label: 'Email',
-            value: 'kelompok4uhuy@gmail.com',
+            value: currentEmail,
             onTap: () {
-              // Navigasi ke halaman ResetEmailPage (ubahemail.dart)
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => UbahEmailPage(),  // Pindah ke halaman ubahemail.dart
+                  builder: (context) => UbahEmailPage(),
                 ),
               );
             },
           ),
           ProfileItem(
             label: 'Password',
-            value: '********',
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.folder),
-            label: 'Files',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            value: currentPassword,
           ),
         ],
       ),
@@ -139,12 +168,12 @@ class ProfileItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,  // Aksi ketika item diklik
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.pink[50], // Warna background sesuai desain
+            color: Colors.pink[50],
             borderRadius: BorderRadius.circular(10),
           ),
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
