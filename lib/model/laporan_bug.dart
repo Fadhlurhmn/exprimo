@@ -4,7 +4,7 @@ FirebaseDatabase database = FirebaseDatabase.instance;
 
 class LaporanBug {
   String laporan;
-  int userid;
+  String userid;
 
   LaporanBug({
     required this.laporan,
