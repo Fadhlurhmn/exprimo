@@ -4,6 +4,7 @@ import 'package:exprimo/navigation.dart';
 import 'package:exprimo/login/forgot_password.dart';
 import 'package:exprimo/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:exprimo/login/background.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,23 +14,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controller untuk TextField
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  bool loginError = false;
+
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus(); // Mengecek status login saat inisialisasi
+    _checkLoginStatus();
   }
 
-  // Fungsi untuk mengecek apakah user sudah login
   void _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
     if (userId != null) {
-      // Jika userId ada, langsung navigasi ke menu utama
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => Navigation_menu()),
@@ -45,6 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            
+            Container(
+              height: size.height * 0.59,
+              child: Background(isLoginActive: true),
+            ),
+
+            // Login form now takes 45% of screen height
             Expanded(
               child: Container(
                 color: secondaryColor,
@@ -55,7 +62,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(height: size.height * 0.05),
+                        SizedBox(height: size.height * 0.05), // Adjusted height to move down
+                        // Username Input Field
                         Container(
                           width: size.width * 0.8,
                           child: TextFormField(
@@ -69,18 +77,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               fillColor: Colors.white,
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Image.asset("assets/icons/Person.png"),
+                                child: Image.asset(
+                                  "assets/icons/Person.png",
+                                  width: size.width * 0.06,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Harap masukkan username.';
                               }
+                              if (loginError) {
+                                return 'Username salah.';
+                              }
                               return null;
                             },
                           ),
                         ),
                         SizedBox(height: size.height * 0.03),
+                        // Password Input Field
                         Container(
                           width: size.width * 0.8,
                           child: TextFormField(
@@ -95,12 +110,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               fillColor: Colors.white,
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Image.asset("assets/icons/Lock.png"),
+                                child: Image.asset(
+                                  "assets/icons/Lock.png",
+                                  width: size.width * 0.06,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Harap masukkan password.';
+                              }
+                              if (loginError) {
+                                return 'Password salah.';
                               }
                               return null;
                             },
@@ -108,29 +129,38 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ForgotPasswordScreen(),
+                          child: Padding(
+                            padding: EdgeInsets.only(top: size.height * 0.02), // Adjust the value as needed
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Lupa Password?',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: size.width * 0.04,
                                 ),
-                              );
-                            },
-                            child: Text(
-                              'Lupa Password?',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: size.width * 0.04,
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: size.height * 0.05),
+
+                        SizedBox(height: size.height * 0.04),
+                        // Login Button
                         Container(
                           width: size.width * 0.8,
                           child: ElevatedButton(
                             onPressed: () async {
+                              setState(() {
+                                loginError = false;
+                              });
+
                               if (_formKey.currentState!.validate()) {
                                 bool success = await login(
                                     usernameController.text,
@@ -143,8 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                             Navigation_menu()),
                                   );
                                 } else {
-                                  _showErrorDialog(
-                                      "Username atau password salah.");
+                                  setState(() {
+                                    loginError = true;
+                                  });
+                                  _formKey.currentState!.validate();
                                 }
                               }
                             },
@@ -152,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Login',
                               style: TextStyle(
                                 color: secondaryColor,
-                                fontSize: 20,
+                                fontSize: size.width * 0.05,
                                 fontFamily: 'Nunito',
                                 fontWeight: FontWeight.w400,
                               ),
@@ -160,7 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: secondaryColor,
-                              padding: EdgeInsets.symmetric(vertical: 10),
+                              padding: EdgeInsets.symmetric(
+                                vertical: size.height * 0.02,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -176,27 +210,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  // Menampilkan dialog error
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Error"),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
     );
   }
 }
