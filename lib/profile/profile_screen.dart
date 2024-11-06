@@ -1,31 +1,58 @@
 import 'package:exprimo/model/laporan_bug.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'ubahprofile.dart'; // Import halaman Ubah Profil
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:exprimo/login/login_screen.dart';
+import 'ubahprofile.dart';
 
-// Firebase database reference for "reports" table
-FirebaseDatabase database = FirebaseDatabase.instance;
+class ProfilePage extends StatefulWidget {
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
 
-class ProfilePage extends StatelessWidget {
+class _ProfilePageState extends State<ProfilePage> {
+  String username = "";
+  String userId = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // Fungsi untuk memuat data pengguna berdasarkan userId dari Firebase
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId') ?? "";
+
+    if (userId.isNotEmpty) {
+      // Ambil data user dari Firebase
+      DatabaseReference userRef =
+          FirebaseDatabase.instance.ref("users/$userId");
+      userRef.once().then((DatabaseEvent event) {
+        final dataSnapshot = event.snapshot;
+        if (dataSnapshot.exists) {
+          setState(() {
+            username = dataSnapshot.child("username").value.toString();
+          });
+        }
+      });
+    }
+  }
+
+  // Fungsi untuk logout dan hapus session
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
-      ),
       body: Column(
         children: [
           SizedBox(height: 20),
@@ -37,7 +64,7 @@ class ProfilePage extends StatelessWidget {
           ),
           SizedBox(height: 20),
           Text(
-            'Azka Kasmito Putra',
+            username, // Nama dinamis dari Firebase
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -66,16 +93,15 @@ class ProfilePage extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                builder: (context) => BugReportModal(),
+                builder: (context) =>
+                    BugReportModal(), // Tidak perlu kirim userId
               );
             },
           ),
           MenuButton(
             icon: Icons.logout,
             label: 'Keluar',
-            onTap: () {
-              Navigator.pop(context);
-            },
+            onTap: _logout,
             isLogout: true,
           ),
         ],
@@ -135,8 +161,28 @@ class MenuButton extends StatelessWidget {
   }
 }
 
-class BugReportModal extends StatelessWidget {
+class BugReportModal extends StatefulWidget {
+  @override
+  _BugReportModalState createState() => _BugReportModalState();
+}
+
+class _BugReportModalState extends State<BugReportModal> {
   final TextEditingController _reportController = TextEditingController();
+  String userId = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  // Fungsi untuk memuat userId dari SharedPreferences
+  Future<void> _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString('userId') ?? "";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -179,15 +225,16 @@ class BugReportModal extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              // Save report to Firebase
               final report = LaporanBug(
                 laporan: _reportController.text,
-                userid: 123, // Use the actual user ID if available
+                userid: userId, // Gunakan userId yang dimuat dari sesi
               );
 
-              await database.ref("reports").push().set(report.toJson());
+              await FirebaseDatabase.instance
+                  .ref("reports")
+                  .push()
+                  .set(report.toJson());
 
-              // Show success Snackbar
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text("Laporan berhasil dikirim!"),
@@ -195,7 +242,6 @@ class BugReportModal extends StatelessWidget {
                 ),
               );
 
-              // Clear input and close modal
               _reportController.clear();
               Navigator.pop(context);
             },
