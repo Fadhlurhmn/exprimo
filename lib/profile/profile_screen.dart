@@ -20,15 +20,12 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
-  // Fungsi untuk memuat data pengguna berdasarkan userId dari Firebase
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId') ?? "";
 
     if (userId.isNotEmpty) {
-      // Ambil data user dari Firebase
-      DatabaseReference userRef =
-          FirebaseDatabase.instance.ref("users/$userId");
+      DatabaseReference userRef = FirebaseDatabase.instance.ref("users/$userId");
       userRef.once().then((DatabaseEvent event) {
         final dataSnapshot = event.snapshot;
         if (dataSnapshot.exists) {
@@ -40,7 +37,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Fungsi untuk logout dan hapus session
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userId');
@@ -53,58 +49,63 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(height: 20),
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: NetworkImage(
-              'https://media.licdn.com/dms/image/v2/D5603AQEh91D9scCDiw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1721730196006?e=1732752000&v=beta&t=2sLe8Tg8FJulTxBI_90T1V4GEcDhVqnPPrdwtTAyH9k',
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            username, // Nama dinamis dari Firebase
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 40),
-          MenuButton(
-            icon: Icons.edit,
-            label: 'Ubah Profil',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UbahProfilePage(),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 70,
+                backgroundImage: NetworkImage(
+                  'https://media.licdn.com/dms/image/v2/D5603AQEh91D9scCDiw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1721730196006?e=1732752000&v=beta&t=2sLe8Tg8FJulTxBI_90T1V4GEcDhVqnPPrdwtTAyH9k',
                 ),
-              );
-            },
-          ),
-          MenuButton(
-            icon: Icons.bug_report,
-            label: 'Laporkan bug',
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              SizedBox(height: 20),
+              Text(
+                username,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                builder: (context) =>
-                    BugReportModal(), // Tidak perlu kirim userId
-              );
-            },
+              ),
+              SizedBox(height: 40),
+              MenuButton(
+                icon: Icons.edit,
+                label: 'Ubah Profil',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UbahProfilePage(),
+                    ),
+                  );
+                },
+              ),
+              MenuButton(
+                icon: Icons.bug_report,
+                label: 'Laporkan bug',
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (context) => BugReportModal(),
+                  );
+                },
+              ),
+              MenuButton(
+                icon: Icons.logout,
+                label: 'Keluar',
+                onTap: _logout,
+                isLogout: true,
+              ),
+              SizedBox(height: 40),
+            ],
           ),
-          MenuButton(
-            icon: Icons.logout,
-            label: 'Keluar',
-            onTap: _logout,
-            isLogout: true,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -176,7 +177,6 @@ class _BugReportModalState extends State<BugReportModal> {
     _loadUserId();
   }
 
-  // Fungsi untuk memuat userId dari SharedPreferences
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -227,7 +227,7 @@ class _BugReportModalState extends State<BugReportModal> {
             onPressed: () async {
               final report = LaporanBug(
                 laporan: _reportController.text,
-                userid: userId, // Gunakan userId yang dimuat dari sesi
+                userid: userId,
               );
 
               await FirebaseDatabase.instance
