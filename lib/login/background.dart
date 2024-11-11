@@ -40,7 +40,7 @@ class _BackgroundState extends State<Background> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(height: size.height * 0.02),
+                  SizedBox(height: size.height * 0.01),
                   Image.asset(
                     "assets/images/smile.png",
                     width: size.width * 0.5,
@@ -85,7 +85,7 @@ class _BackgroundState extends State<Background> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.isLoginActive ? secondaryColor : Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
+                    padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(0),
@@ -119,7 +119,7 @@ class _BackgroundState extends State<Background> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.isLoginActive ? Colors.white : secondaryColor,
-                    padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
+                    padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(10),

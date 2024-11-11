@@ -21,7 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
-  
+
   String? emailError;
   String? usernameError;
   String? passwordError;
@@ -34,7 +34,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Background(isLoginActive: false),
+            // Background takes up 60% of the screen
+            Container(
+              height: size.height * 0.6,  // 60% of the screen height
+              child: Background(isLoginActive: false),
+            ),
+            // Form takes up 40% of the screen
             Expanded(
               child: Container(
                 color: secondaryColor,
@@ -53,7 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           validator: _validateEmail,
                           errorText: emailError,
                         ),
-                        SizedBox(height: size.height * 0.01),
+                        SizedBox(height: size.height * 0.02),
                         _buildTextField(
                           controller: usernameController,
                           hintText: 'Masukkan username',
@@ -61,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           validator: _validateUsername,
                           errorText: usernameError,
                         ),
-                        SizedBox(height: size.height * 0.01),
+                        SizedBox(height: size.height * 0.02),
                         _buildTextField(
                           controller: passwordController,
                           hintText: 'Masukkan password',
@@ -124,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: double.infinity,
+          width: double.infinity,  // Menjamin lebar penuh
           child: TextFormField(
             controller: controller,
             obscureText: isPassword,
@@ -133,13 +138,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),  // Sesuaikan padding untuk semua kolom
               filled: true,
               fillColor: Colors.white,
               prefixIcon: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset(icon),
+                child: Image.asset(
+                  icon,
+                  width: 30,  // Ukuran ikon 30
+                  height: 30, // Ukuran ikon 30
+                ),
               ),
+
             ),
             validator: validator,
           ),

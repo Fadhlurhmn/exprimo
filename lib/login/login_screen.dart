@@ -1,9 +1,10 @@
-import 'package:exprimo/homepage_screen.dart';
-import 'package:exprimo/model/userdata.dart';
 import 'package:flutter/material.dart';
-import 'package:exprimo/login/background.dart';
-import 'package:exprimo/constants.dart';
+import 'package:exprimo/model/userdata.dart';
+import 'package:exprimo/navigation.dart';
 import 'package:exprimo/login/forgot_password.dart';
+import 'package:exprimo/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:exprimo/login/background.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,10 +14,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controller untuk TextField
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); // Membuat GlobalKey untuk form
+  final _formKey = GlobalKey<FormState>();
+
+  bool loginError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+    if (userId != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Navigation_menu()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,21 +45,25 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Background Widget
-            Background(isLoginActive: true),
+            
+            Container(
+              height: size.height * 0.59,
+              child: Background(isLoginActive: true),
+            ),
 
-            // Kotak berwarna secondaryColor di bagian bawah
+            // Login form now takes 45% of screen height
             Expanded(
               child: Container(
                 color: secondaryColor,
                 padding: EdgeInsets.symmetric(horizontal: size.width * 0.06),
                 child: SingleChildScrollView(
                   child: Form(
-                    key: _formKey, // Menggunakan form key untuk validasi
+                    key: _formKey,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(height: size.height * 0.05), // Jarak atas
+                        SizedBox(height: size.height * 0.05), // Adjusted height to move down
+                        // Username Input Field
                         Container(
                           width: size.width * 0.8,
                           child: TextFormField(
@@ -50,24 +73,29 @@ class _LoginScreenState extends State<LoginScreen> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 15),
                               filled: true,
                               fillColor: Colors.white,
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Image.asset("assets/icons/Person.png"),
+                                child: Image.asset(
+                                  "assets/icons/Person.png",
+                                  width: size.width * 0.06,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Harap masukkan username.';
                               }
+                              if (loginError) {
+                                return 'Username salah.';
+                              }
                               return null;
                             },
                           ),
                         ),
                         SizedBox(height: size.height * 0.03),
+                        // Password Input Field
                         Container(
                           width: size.width * 0.8,
                           child: TextFormField(
@@ -78,66 +106,77 @@ class _LoginScreenState extends State<LoginScreen> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 15),
                               filled: true,
                               fillColor: Colors.white,
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Image.asset("assets/icons/Lock.png"),
+                                child: Image.asset(
+                                  "assets/icons/Lock.png",
+                                  width: size.width * 0.06,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Harap masukkan password.';
                               }
+                              if (loginError) {
+                                return 'Password salah.';
+                              }
                               return null;
                             },
                           ),
                         ),
-
-                        // Tautan Lupa Password
                         Align(
                           alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ForgotPasswordScreen(),
+                          child: Padding(
+                            padding: EdgeInsets.only(top: size.height * 0.02), // Adjust the value as needed
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Lupa Password?',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: size.width * 0.04,
                                 ),
-                              );
-                            },
-                            child: Text(
-                              'Lupa Password?',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: size.width * 0.04,
                               ),
                             ),
                           ),
                         ),
 
-                        SizedBox(height: size.height * 0.05), // Jarak sebelum tombol Login
-
-                        // Tombol Login di bagian bawah
+                        SizedBox(height: size.height * 0.04),
+                        // Login Button
                         Container(
                           width: size.width * 0.8,
                           child: ElevatedButton(
                             onPressed: () async {
+                              setState(() {
+                                loginError = false;
+                              });
+
                               if (_formKey.currentState!.validate()) {
-                                // Memanggil fungsi login
-                                bool success = await login(usernameController.text, passwordController.text);
+                                bool success = await login(
+                                    usernameController.text,
+                                    passwordController.text);
                                 if (success) {
-                                  // Aksi untuk tombol Login berhasil
-                                  Navigator.push(
+                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => Homepage()),
+                                        builder: (context) =>
+                                            Navigation_menu()),
                                   );
                                 } else {
-                                  // Menampilkan alert dialog jika login gagal
-                                  _showErrorDialog("Username atau password salah.");
+                                  setState(() {
+                                    loginError = true;
+                                  });
+                                  _formKey.currentState!.validate();
                                 }
                               }
                             },
@@ -145,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Login',
                               style: TextStyle(
                                 color: secondaryColor,
-                                fontSize: 20,
+                                fontSize: size.width * 0.05,
                                 fontFamily: 'Nunito',
                                 fontWeight: FontWeight.w400,
                               ),
@@ -153,14 +192,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: secondaryColor,
-                              padding: EdgeInsets.symmetric(vertical: 20),
+                              padding: EdgeInsets.symmetric(
+                                vertical: size.height * 0.02,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: size.height * 0.03), // Jarak bawah
                       ],
                     ),
                   ),
@@ -171,31 +211,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  // Fungsi untuk menampilkan dialog kesalahan
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text("Error"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop(); // Menutup dialog
-            },
-            child: Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 }

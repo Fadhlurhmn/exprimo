@@ -1,4 +1,5 @@
-import 'package:exprimo/model/userdata.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:exprimo/constants.dart';
@@ -26,10 +27,9 @@ class NewPasswordPage extends StatelessWidget {
         backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        // Wrap the body with SingleChildScrollView
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Use form key for validation
+          key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -74,6 +74,9 @@ class NewPasswordPage extends StatelessWidget {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a new password';
                   }
+                  if (value.length < 8) {
+                    return 'Password must be at least 8 characters long';
+                  }
                   return null;
                 },
               ),
@@ -109,8 +112,11 @@ class NewPasswordPage extends StatelessWidget {
                 ),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    // Hash the password
+                    String hashedPassword = _hashPassword(_newPassword.text);
+
                     // Update password in the database
-                    await updatePassword(userId, _newPassword.text);
+                    await updatePassword(userId, hashedPassword);
 
                     // Show success dialog
                     showDialog<String>(
@@ -152,11 +158,18 @@ class NewPasswordPage extends StatelessWidget {
     );
   }
 
-  Future<void> updatePassword(String? userId, String newPassword) async {
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password); // Konversi password ke bytes
+    final hashed = sha256.convert(bytes); // Hash menggunakan SHA-256
+    return hashed.toString(); // Ubah hasil hash ke format string
+  }
+
+  Future<void> updatePassword(String? userId, String hashedPassword) async {
     if (userId != null) {
-      DatabaseReference userRef = database.ref("users/$userId");
+      DatabaseReference userRef =
+          FirebaseDatabase.instance.ref("users/$userId");
       try {
-        await userRef.update({'password': newPassword});
+        await userRef.update({'password': hashedPassword});
         print("Password updated successfully for user $userId");
       } catch (error) {
         print("Failed to update password: $error");
