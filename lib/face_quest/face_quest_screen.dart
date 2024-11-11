@@ -1,4 +1,5 @@
 import 'package:exprimo/constants.dart';
+import 'package:exprimo/face_quest/expression_result_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
@@ -216,7 +217,7 @@ class ExpressionListItem extends StatelessWidget {
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFD19F9F),
-                  foregroundColor: Colors.black, // Set text and icon color
+                  foregroundColor: Colors.black,
                 ),
                 label: Text("Mulai"),
                 icon: Icon(
@@ -227,7 +228,11 @@ class ExpressionListItem extends StatelessWidget {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CameraScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => CameraScreen(
+                        expressionItem: item, // Kirim item ekspresi
+                      ),
+                    ),
                   );
                 },
               ),
@@ -248,7 +253,10 @@ class ExpressionItem {
 }
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({Key? key}) : super(key: key);
+  final ExpressionItem expressionItem; // Tambahkan parameter ini
+
+  const CameraScreen({Key? key, required this.expressionItem})
+      : super(key: key);
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -336,24 +344,44 @@ class _CameraScreenState extends State<CameraScreen> {
           Expanded(
             flex: 1,
             child: Center(
-              child: Text(
-                '🙂',
-                style: TextStyle(fontSize: 50),
+              child: Image.asset(
+                'assets/images/${widget.expressionItem.name.toLowerCase()}.png', // Gunakan gambar sesuai ekspresi
+                width: 100,
+                height: 100,
               ),
             ),
           ),
           Expanded(
-            flex: 2,
-            child: _capturedImage == null
-                ? Transform(
-                    alignment: Alignment.center,
-                    transform: isFrontCamera
-                        ? Matrix4.rotationY(0)
-                        : Matrix4.identity(),
-                    child: CameraPreview(_controller!),
-                  )
-                : Image.file(_capturedImage!),
+            flex: 5,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return AspectRatio(
+                  aspectRatio: 9 / 16,
+                  child: _capturedImage == null
+                      ? Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()
+                            ..scale(
+                              isFrontCamera ? -1.0 : 1.0,
+                              1.0,
+                            ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: CameraPreview(_controller!),
+                          ),
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.file(
+                            _capturedImage!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                );
+              },
+            ),
           ),
+          SizedBox(height: 20),
           ElevatedButton(
             onPressed: _captureImage,
             child: Text("Capture Image"),
@@ -366,36 +394,25 @@ class _CameraScreenState extends State<CameraScreen> {
       ),
     );
   }
-}
 
-class ExpressionResultScreen extends StatelessWidget {
-  final File imageFile;
-  final String detectedExpression;
+  void _navigateToResultScreen() async {
+    if (!_controller!.value.isInitialized) {
+      return;
+    }
+    try {
+      final image = await _controller!.takePicture();
+      File capturedImage = File(image.path);
 
-  ExpressionResultScreen(
-      {required this.imageFile, required this.detectedExpression});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Expression Result')),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Image.file(imageFile),
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ExpressionResultScreen(
+            imageFile: capturedImage,
+            detectedExpression: widget.expressionItem.name,
           ),
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: Text(
-                'Detected Expression: $detectedExpression',
-                style: TextStyle(fontSize: 24),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
   }
 }
