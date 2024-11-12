@@ -18,12 +18,12 @@ class _BackgroundState extends State<Background> {
     Size size = MediaQuery.of(context).size;
 
     return Container(
-      height: size.height * 0.5,
+      height: size.height * 0.2,
       child: Column(
         children: [
           // Bagian atas dengan teks dan logo
           Expanded(
-            flex: 1,
+            // flex: 1,
             child: Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
@@ -35,17 +35,17 @@ class _BackgroundState extends State<Background> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: size.width * 0.06,
+                      fontSize: size.width * 0.05,
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(height: size.height * 0.01),
+                  SizedBox(height: size.height * 0.01), // Reduced space
                   Image.asset(
                     "assets/images/smile.png",
                     width: size.width * 0.5,
                   ),
-                  SizedBox(height: size.height * 0.015),
+                  SizedBox(height: size.height * 0.01), // Reduced space
                   Text(
                     'Yuk, register atau login sekarang untuk akses penuh ke semua fitur menarik di Exprimo!',
                     textAlign: TextAlign.center,
