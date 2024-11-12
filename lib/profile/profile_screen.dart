@@ -58,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
               CircleAvatar(
                 radius: 70,
                 backgroundImage: NetworkImage(
-                  'https://media.licdn.com/dms/image/v2/D5603AQEh91D9scCDiw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1721730196006?e=1732752000&v=beta&t=2sLe8Tg8FJulTxBI_90T1V4GEcDhVqnPPrdwtTAyH9k',
+                  'https://www.google.com/url?sa=i&url=https%3A%2F%2Fpixabay.com%2Fid%2Fimages%2Fsearch%2Fgambar%2520profil%2520kosong%2F&psig=AOvVaw0pGloVsAvX9-N_UmqNMZ2Y&ust=1731479094828000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLC-sMiU1okDFQAAAAAdAAAAABAE',
                 ),
               ),
               SizedBox(height: 20),
