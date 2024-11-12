@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ubahusername.dart';
 import 'ubahemail.dart';
@@ -15,8 +16,10 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
   String currentUsername = 'Loading...';
   String currentEmail = 'Loading...';
   String currentPassword = '********';
+  String profileImageUrl = '';
   File? _imageFile;
   DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+  String? userId;
 
   @override
   void initState() {
@@ -26,16 +29,16 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
 
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId');
+    userId = prefs.getString('userId');
 
     if (userId != null) {
-      DatabaseEvent event = await usersRef.child(userId).once();
+      DatabaseEvent event = await usersRef.child(userId!).once();
       if (event.snapshot.value != null) {
         Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
         setState(() {
           currentUsername = userData['username'] ?? 'Unknown';
           currentEmail = userData['email'] ?? 'Unknown';
-          currentPassword = '********';  // Masked for display
+          profileImageUrl = userData['profileImageUrl'] ?? '';
         });
       }
     }
@@ -46,6 +49,34 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
+      });
+      await _uploadImageToFirebase();
+    }
+  }
+
+  Future<void> _uploadImageToFirebase() async {
+    if (_imageFile != null && userId != null) {
+      try {
+        final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
+        await storageRef.putFile(_imageFile!);
+
+        String downloadUrl = await storageRef.getDownloadURL();
+        await usersRef.child(userId!).update({'profileImageUrl': downloadUrl});
+
+        setState(() {
+          profileImageUrl = downloadUrl;
+        });
+      } catch (e) {
+        print("Error uploading image: $e");
+      }
+    }
+  }
+
+  Future<void> _updateUsername(String newUsername) async {
+    if (userId != null) {
+      await usersRef.child(userId!).update({'username': newUsername});
+      setState(() {
+        currentUsername = newUsername;
       });
     }
   }
@@ -68,85 +99,87 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          SizedBox(height: 20),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 20),
 
-          // Profile Picture with Edit Icon
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: _imageFile != null
-                    ? FileImage(_imageFile!)
-                    : AssetImage('assets/placeholder_profile.png') as ImageProvider,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.edit,
-                      size: 20,
-                      color: Colors.grey,
+            // Profile Picture with Edit Icon
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: profileImageUrl.isNotEmpty
+                      ? NetworkImage(profileImageUrl)
+                      : AssetImage('assets/placeholder_profile.png') as ImageProvider,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 20),
-
-          // Profile Information Label
-          Text(
-            'Profile Information',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+              ],
             ),
-          ),
 
-          SizedBox(height: 20),
+            SizedBox(height: 20),
 
-          // Username, Email, Password
-          ProfileItem(
-            label: 'Username',
-            value: currentUsername,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditUsernamePage(username: currentUsername),
-                ),
-              );
-            },
-          ),
-          ProfileItem(
-            label: 'Email',
-            value: currentEmail,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UbahEmailPage(),
-                ),
-              );
-            },
-          ),
-          ProfileItem(
-            label: 'Password',
-            value: currentPassword,
-          ),
-        ],
+            Text(
+              'Profile Information',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+
+            SizedBox(height: 20),
+
+            // Username, Email, Password
+            ProfileItem(
+              label: 'Username',
+              value: currentUsername,
+              onTap: () async {
+                final updatedUsername = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditUsernamePage(username: currentUsername),
+                  ),
+                );
+                if (updatedUsername != null && updatedUsername is String) {
+                  await _updateUsername(updatedUsername);
+                }
+              },
+            ),
+
+            ProfileItem(
+              label: 'Email',
+              value: currentEmail,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UbahEmailPage(),
+                  ),
+                );
+              },
+            ),
+            ProfileItem(
+              label: 'Password',
+              value: currentPassword,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -185,18 +218,12 @@ class ProfileItem extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 5),
                     Text(
                       value,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

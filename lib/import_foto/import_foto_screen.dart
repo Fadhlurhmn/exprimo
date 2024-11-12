@@ -56,9 +56,10 @@ class _PhotoPickerPageState extends State<PhotoPickerPage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              // Handle back navigation
+              Navigator.pop(context); // Go back to the previous screen
             },
           ),
+
           actions: [
             IconButton(
               icon: const Icon(Icons.import_export),

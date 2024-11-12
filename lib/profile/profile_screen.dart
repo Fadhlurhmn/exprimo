@@ -11,30 +11,19 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String username = "";
   String userId = "";
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadUserId();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    userId = prefs.getString('userId') ?? "";
-
-    if (userId.isNotEmpty) {
-      DatabaseReference userRef = FirebaseDatabase.instance.ref("users/$userId");
-      userRef.once().then((DatabaseEvent event) {
-        final dataSnapshot = event.snapshot;
-        if (dataSnapshot.exists) {
-          setState(() {
-            username = dataSnapshot.child("username").value.toString();
-          });
-        }
-      });
-    }
+    setState(() {
+      userId = prefs.getString('userId') ?? "";
+    });
   }
 
   Future<void> _logout() async {
@@ -55,26 +44,43 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 70,
-                backgroundImage: NetworkImage(
-                  'https://www.google.com/url?sa=i&url=https%3A%2F%2Fpixabay.com%2Fid%2Fimages%2Fsearch%2Fgambar%2520profil%2520kosong%2F&psig=AOvVaw0pGloVsAvX9-N_UmqNMZ2Y&ust=1731479094828000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLC-sMiU1okDFQAAAAAdAAAAABAE',
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                username,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              // Menggunakan StreamBuilder untuk memantau perubahan username
+              StreamBuilder(
+                stream: FirebaseDatabase.instance.ref("users/$userId").onValue,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                    final data = snapshot.data!.snapshot.value as Map;
+                    String username = data['username'] ?? "Pengguna";
+
+                    return Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 70,
+                          backgroundImage: NetworkImage(
+                            'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          username,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return CircularProgressIndicator();
+                  }
+                },
               ),
               SizedBox(height: 40),
               MenuButton(
                 icon: Icons.edit,
                 label: 'Ubah Profil',
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => UbahProfilePage(),
@@ -148,9 +154,7 @@ class MenuButton extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
               Icon(Icons.arrow_forward_ios, size: 16),
