@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'scanfoto.dart'; // Make sure to import the ScanningScreen.
 
 class PhotoPickerPage extends StatefulWidget {
   @override
@@ -31,21 +32,40 @@ class _PhotoPickerPageState extends State<PhotoPickerPage> {
         .map((entry) => entry.value)
         .toList();
 
-    // Now you can use selectedImages for your import logic
-    print("Selected Images for Import: $selectedImages");
+    if (selectedImages.isNotEmpty) {
+      // Navigate to the next screen with the selected image
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ScanningScreen(imageFile: File(selectedImages[0].path)),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Pilih Foto"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.import_export),
-            onPressed: pickImages,
+      // backgroundColor: Color(0xFFEFBEBE), // Set background color of Scaffold
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight), // Ensure the AppBar height is consistent
+        child: AppBar(
+          title: const Text("Pilih Foto"),
+          backgroundColor: Color(0xFFEFBEBE), // Set the background color of the AppBar
+          elevation: 0, // Remove shadow under the AppBar
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // Handle back navigation
+            },
           ),
-        ],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.import_export),
+              onPressed: pickImages,
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [

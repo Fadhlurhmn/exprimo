@@ -1,62 +1,48 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
-void main() {
-  runApp(MyApp());
-}
+class ScanningScreen extends StatelessWidget {
+  final File imageFile;
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Expression Scanner',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      home: ScanningPage(),
-    );
-  }
-}
+  const ScanningScreen({required this.imageFile});
 
-class ScanningPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Color(0xFFEFBEBE),
       appBar: AppBar(
-        title: Text('Scanning'),
-        backgroundColor: Colors.pink[100],
-        leading: Icon(Icons.arrow_back),
+        title: const Text("Scanning"),
+        backgroundColor: Color(0xFFEFBEBE),
+        elevation: 0,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Scanning area
-          Container(
-            width: 200,
-            height: 300,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 3),
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: AssetImage('assets/sample_image.jpg'), // Image placeholder
-                fit: BoxFit.cover,
+      body: Center( // Center everything in the body
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+          crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+          children: [
+            // Display the selected image in a frame
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: 2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(imageFile, fit: BoxFit.cover),
               ),
             ),
-          ),
-          SizedBox(height: 20),
-          // Detected Expression label
-          Text(
-            'Detected Expression:',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 20),
+            const Text(
+              "Detected Expression:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
-          SizedBox(height: 20),
-          // Loading indicator
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
-          ),
-        ],
+            const SizedBox(height: 20),
+            // Loading indicator (could be replaced with actual expression detection result)
+            CircularProgressIndicator(),
+          ],
+        ),
       ),
     );
   }
