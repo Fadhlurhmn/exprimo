@@ -4,6 +4,8 @@ import 'dart:io';
 import 'scanfoto.dart'; // Make sure to import the ScanningScreen.
 
 class PhotoPickerPage extends StatefulWidget {
+  const PhotoPickerPage({super.key});
+
   @override
   _PhotoPickerPageState createState() => _PhotoPickerPageState();
 }
@@ -48,10 +50,10 @@ class _PhotoPickerPageState extends State<PhotoPickerPage> {
     return Scaffold(
       // backgroundColor: Color(0xFFEFBEBE), // Set background color of Scaffold
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight), // Ensure the AppBar height is consistent
+        preferredSize: const Size.fromHeight(kToolbarHeight), // Ensure the AppBar height is consistent
         child: AppBar(
           title: const Text("Pilih Foto"),
-          backgroundColor: Color(0xFFEFBEBE), // Set the background color of the AppBar
+          backgroundColor: const Color(0xFFEFBEBE), // Set the background color of the AppBar
           elevation: 0, // Remove shadow under the AppBar
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),

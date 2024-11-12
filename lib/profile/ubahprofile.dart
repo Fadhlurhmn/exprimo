@@ -8,6 +8,8 @@ import 'ubahusername.dart';
 import 'ubahemail.dart';
 
 class UbahProfilePage extends StatefulWidget {
+  const UbahProfilePage({super.key});
+
   @override
   _UbahProfilePageState createState() => _UbahProfilePageState();
 }
@@ -88,12 +90,12 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           'Ubah Profil',
           style: TextStyle(color: Colors.black),
         ),
@@ -102,7 +104,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Profile Picture with Edit Icon
             Stack(
@@ -112,7 +114,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                   radius: 50,
                   backgroundImage: profileImageUrl.isNotEmpty
                       ? NetworkImage(profileImageUrl)
-                      : AssetImage('assets/placeholder_profile.png') as ImageProvider,
+                      : const AssetImage('assets/placeholder_profile.png') as ImageProvider,
                 ),
                 Positioned(
                   bottom: 0,
@@ -120,12 +122,12 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                   child: GestureDetector(
                     onTap: _pickImage,
                     child: Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.edit,
                         size: 20,
                         color: Colors.grey,
@@ -136,14 +138,14 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
               ],
             ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             Text(
               'Profile Information',
               style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Username, Email, Password
             ProfileItem(
@@ -169,7 +171,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => UbahEmailPage(),
+                    builder: (context) => const UbahEmailPage(),
                   ),
                 );
               },
@@ -209,7 +211,7 @@ class ProfileItem extends StatelessWidget {
             color: Colors.pink[50],
             borderRadius: BorderRadius.circular(10),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           child: Row(
             children: [
               Expanded(
@@ -220,15 +222,15 @@ class ProfileItem extends StatelessWidget {
                       label,
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Text(
                       value,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16),
+              const Icon(Icons.arrow_forward_ios, size: 16),
             ],
           ),
         ),

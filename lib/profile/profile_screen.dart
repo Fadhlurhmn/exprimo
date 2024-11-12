@@ -6,6 +6,8 @@ import 'package:exprimo/login/login_screen.dart';
 import 'ubahprofile.dart';
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -31,7 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await prefs.remove('userId');
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -54,16 +56,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     return Column(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 70,
                           backgroundImage: NetworkImage(
                             'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         Text(
                           username,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -71,11 +73,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     );
                   } else {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
                 },
               ),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               MenuButton(
                 icon: Icons.edit,
                 label: 'Ubah Profil',
@@ -83,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UbahProfilePage(),
+                      builder: (context) => const UbahProfilePage(),
                     ),
                   );
                 },
@@ -95,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    shape: RoundedRectangleBorder(
+                    shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     builder: (context) => BugReportModal(),
@@ -108,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onTap: _logout,
                 isLogout: true,
               ),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -150,14 +152,14 @@ class MenuButton extends StatelessWidget {
           child: Row(
             children: [
               Icon(icon, color: isLogout ? Colors.red : Colors.black),
-              SizedBox(width: 20),
+              const SizedBox(width: 20),
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16),
+              const Icon(Icons.arrow_forward_ios, size: 16),
             ],
           ),
         ),
@@ -199,12 +201,12 @@ class _BugReportModalState extends State<BugReportModal> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(height: 20),
-          Text(
+          const SizedBox(height: 20),
+          const Text(
             'Isi laporan mu dibawah ini',
             style: TextStyle(fontSize: 16),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           TextField(
             controller: _reportController,
             maxLength: 255,
@@ -221,7 +223,7 @@ class _BugReportModalState extends State<BugReportModal> {
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
-              icon: Icon(Icons.cancel, color: Colors.grey),
+              icon: const Icon(Icons.cancel, color: Colors.grey),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -240,7 +242,7 @@ class _BugReportModalState extends State<BugReportModal> {
                   .set(report.toJson());
 
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text("Laporan berhasil dikirim!"),
                   backgroundColor: Colors.green,
                 ),
@@ -249,7 +251,7 @@ class _BugReportModalState extends State<BugReportModal> {
               _reportController.clear();
               Navigator.pop(context);
             },
-            child: Text("Kirim Laporan"),
+            child: const Text("Kirim Laporan"),
           ),
         ],
       ),

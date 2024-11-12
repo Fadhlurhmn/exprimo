@@ -45,7 +45,7 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
       bool usernameExists = await checkUsernameExists(_usernameController.text);
       if (usernameExists) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Username sudah digunakan')),
+          const SnackBar(content: Text('Username sudah digunakan')),
         );
         return;
       }
@@ -58,12 +58,12 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
         await prefs.setString('username', _usernameController.text);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Username berhasil diperbarui')),
+          const SnackBar(content: Text('Username berhasil diperbarui')),
         );
         Navigator.pop(context, _usernameController.text);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memperbarui username')),
+          const SnackBar(content: Text('Gagal memperbarui username')),
         );
       }
     }
@@ -76,12 +76,12 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('Edit Username', style: TextStyle(color: Colors.black)),
+        title: const Text('Edit Username', style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
       body: Padding(
@@ -89,9 +89,9 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 30),
-            Text('Username', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            const SizedBox(height: 30),
+            const Text('Username', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(
@@ -107,18 +107,18 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
                 ),
               ),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             Center(
               child: ElevatedButton(
                 onPressed: _isButtonEnabled ? _updateUsername : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isButtonEnabled ? Colors.pink[300] : Colors.grey,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Reset Username',
                   style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
                 ),
