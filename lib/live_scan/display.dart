@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -56,6 +57,7 @@ class DisplayImagePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Hasil Scan'),
+        backgroundColor: secondaryColor,
       ),
       body: Center(
         child: Column(
