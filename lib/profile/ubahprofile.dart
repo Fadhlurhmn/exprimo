@@ -2,11 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ubahusername.dart';
 import 'ubahemail.dart';
 
 class UbahProfilePage extends StatefulWidget {
+  const UbahProfilePage({super.key});
+
   @override
   _UbahProfilePageState createState() => _UbahProfilePageState();
 }
@@ -15,8 +18,10 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
   String currentUsername = 'Loading...';
   String currentEmail = 'Loading...';
   String currentPassword = '********';
+  String profileImageUrl = '';
   File? _imageFile;
   DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+  String? userId;
 
   @override
   void initState() {
@@ -26,16 +31,16 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
 
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId');
+    userId = prefs.getString('userId');
 
     if (userId != null) {
-      DatabaseEvent event = await usersRef.child(userId).once();
+      DatabaseEvent event = await usersRef.child(userId!).once();
       if (event.snapshot.value != null) {
         Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
         setState(() {
           currentUsername = userData['username'] ?? 'Unknown';
           currentEmail = userData['email'] ?? 'Unknown';
-          currentPassword = '********';  // Masked for display
+          profileImageUrl = userData['profileImageUrl'] ?? '';
         });
       }
     }
@@ -47,6 +52,39 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
+      await _uploadImageToFirebase();
+    }
+  }
+
+  Future<void> _uploadImageToFirebase() async {
+    if (_imageFile != null && userId != null) {
+      try {
+        final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
+        
+        // Upload file ke Firebase Storage
+        await storageRef.putFile(_imageFile!);
+
+        // Mendapatkan URL gambar setelah diupload
+        String downloadUrl = await storageRef.getDownloadURL();
+
+        // Simpan URL gambar di Realtime Database di field `profileImageUrl`
+        await usersRef.child(userId!).update({'profileImageUrl': downloadUrl});
+
+        setState(() {
+          profileImageUrl = downloadUrl;
+        });
+      } catch (e) {
+        print("Error uploading image: $e");
+      }
+    }
+  }
+
+  Future<void> _updateUsername(String newUsername) async {
+    if (userId != null) {
+      await usersRef.child(userId!).update({'username': newUsername});
+      setState(() {
+        currentUsername = newUsername;
+      });
     }
   }
 
@@ -57,96 +95,98 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           'Ubah Profil',
           style: TextStyle(color: Colors.black),
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          SizedBox(height: 20),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
 
-          // Profile Picture with Edit Icon
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: _imageFile != null
-                    ? FileImage(_imageFile!)
-                    : AssetImage('assets/placeholder_profile.png') as ImageProvider,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.edit,
-                      size: 20,
-                      color: Colors.grey,
+            // Profile Picture with Edit Icon
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: profileImageUrl.isNotEmpty
+                      ? NetworkImage(profileImageUrl)
+                      : const AssetImage('assets/placeholder_profile.png') as ImageProvider,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 20),
-
-          // Profile Information Label
-          Text(
-            'Profile Information',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+              ],
             ),
-          ),
 
-          SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          // Username, Email, Password
-          ProfileItem(
-            label: 'Username',
-            value: currentUsername,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditUsernamePage(username: currentUsername),
-                ),
-              );
-            },
-          ),
-          ProfileItem(
-            label: 'Email',
-            value: currentEmail,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UbahEmailPage(),
-                ),
-              );
-            },
-          ),
-          ProfileItem(
-            label: 'Password',
-            value: currentPassword,
-          ),
-        ],
+            Text(
+              'Profile Information',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Username, Email, Password
+            ProfileItem(
+              label: 'Username',
+              value: currentUsername,
+              onTap: () async {
+                final updatedUsername = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditUsernamePage(username: currentUsername),
+                  ),
+                );
+                if (updatedUsername != null && updatedUsername is String) {
+                  await _updateUsername(updatedUsername);
+                }
+              },
+            ),
+
+            ProfileItem(
+              label: 'Email',
+              value: currentEmail,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UbahEmailPage(),
+                  ),
+                );
+              },
+            ),
+            ProfileItem(
+              label: 'Password',
+              value: currentPassword,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -176,7 +216,7 @@ class ProfileItem extends StatelessWidget {
             color: Colors.pink[50],
             borderRadius: BorderRadius.circular(10),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           child: Row(
             children: [
               Expanded(
@@ -185,23 +225,17 @@ class ProfileItem extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Text(
                       value,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16),
+              const Icon(Icons.arrow_forward_ios, size: 16),
             ],
           ),
         ),

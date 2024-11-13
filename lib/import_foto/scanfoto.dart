@@ -8,7 +8,7 @@ class ScanningScreen extends StatelessWidget {
 
   void _navigateToResultScreen(BuildContext context) {
     // Navigate to the result screen after detection (for now we'll simulate it)
-    Future.delayed(Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -25,7 +25,7 @@ class ScanningScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Scanning"),
-        backgroundColor: Color(0xFFEFBEBE),
+        backgroundColor: const Color(0xFFEFBEBE),
         elevation: 0,
       ),
       body: Center(
@@ -51,7 +51,7 @@ class ScanningScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            CircularProgressIndicator(),
+            const CircularProgressIndicator(),
           ],
         ),
       ),
@@ -83,7 +83,7 @@ class ResultScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Detection Result"),
-        backgroundColor: Color(0xFFEFBEBE),
+        backgroundColor: const Color(0xFFEFBEBE),
         elevation: 0,
       ),
       body: Center(
