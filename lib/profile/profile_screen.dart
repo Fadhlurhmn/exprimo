@@ -46,21 +46,23 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Menggunakan StreamBuilder untuk memantau perubahan username
+              // Menggunakan StreamBuilder untuk memantau perubahan username dan profileImageUrl
               StreamBuilder(
                 stream: FirebaseDatabase.instance.ref("users/$userId").onValue,
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
                     final data = snapshot.data!.snapshot.value as Map;
+
+                    // Mendapatkan username dan URL gambar profil dari Firebase
                     String username = data['username'] ?? "Pengguna";
+                    String profileImageUrl = data['profileImageUrl'] ??
+                        'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png';
 
                     return Column(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 70,
-                          backgroundImage: NetworkImage(
-                            'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
-                          ),
+                          backgroundImage: NetworkImage(profileImageUrl),
                         ),
                         const SizedBox(height: 20),
                         Text(

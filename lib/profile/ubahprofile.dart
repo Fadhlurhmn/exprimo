@@ -60,9 +60,14 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
     if (_imageFile != null && userId != null) {
       try {
         final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
+        
+        // Upload file ke Firebase Storage
         await storageRef.putFile(_imageFile!);
 
+        // Mendapatkan URL gambar setelah diupload
         String downloadUrl = await storageRef.getDownloadURL();
+
+        // Simpan URL gambar di Realtime Database di field `profileImageUrl`
         await usersRef.child(userId!).update({'profileImageUrl': downloadUrl});
 
         setState(() {

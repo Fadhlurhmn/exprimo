@@ -1,7 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 FirebaseDatabase database = FirebaseDatabase.instance;
 
@@ -9,11 +12,13 @@ class User {
   String username;
   String email;
   String password;
+  String? profileImageUrl; // Menambahkan atribut untuk URL foto profil
 
   User({
     required this.username,
     required this.email,
     required this.password,
+    this.profileImageUrl,
   });
 
   // Mengubah objek user menjadi map
@@ -22,6 +27,7 @@ class User {
       'username': username,
       'email': email,
       'password': password,
+      'profileImageUrl': profileImageUrl,
     };
   }
 }
@@ -57,6 +63,41 @@ Future<void> tambahUser(User user) async {
   // Menambahkan user ke database dengan ID unik yang dihasilkan oleh `push()`
   await usersRef.push().set(user.toJson());
   print("User berhasil ditambahkan!");
+}
+
+// Fungsi untuk mengunggah gambar profil ke Firebase Storage dan mendapatkan URL
+Future<String?> uploadProfileImage(String userId, File imageFile) async {
+  try {
+    final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
+    await storageRef.putFile(imageFile);
+
+    String downloadUrl = await storageRef.getDownloadURL();
+    await database.ref("users/$userId").update({'profileImageUrl': downloadUrl});
+    return downloadUrl;
+  } catch (e) {
+    print("Error uploading profile image: $e");
+    return null;
+  }
+}
+
+// Fungsi untuk memilih gambar dari galeri
+Future<File?> pickImage() async {
+  final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  if (pickedFile != null) {
+    return File(pickedFile.path);
+  }
+  return null;
+}
+
+// Fungsi untuk memperbarui profil gambar pengguna
+Future<void> updateProfileImage(String userId) async {
+  File? imageFile = await pickImage();
+  if (imageFile != null) {
+    String? imageUrl = await uploadProfileImage(userId, imageFile);
+    if (imageUrl != null) {
+      print("Profile image updated successfully!");
+    }
+  }
 }
 
 // Fungsi untuk memeriksa apakah username sudah ada di database
