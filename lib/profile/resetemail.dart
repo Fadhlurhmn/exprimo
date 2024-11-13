@@ -83,8 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!_isValidEmail(newEmail)) {
       // Tampilkan peringatan jika email tidak valid
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Email tidak valid. Harap gunakan format Gmail')),
+        const SnackBar(content: Text('Email tidak valid. Harap gunakan format Gmail')),
       );
       return;
     }
@@ -95,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Email berhasil diubah!')),
         );
-
+        
         // Navigate to UbahProfilePage after email update
         Navigator.pushReplacement(
           context,
@@ -173,8 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       isButtonEnabled ? Colors.pink[200] : Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

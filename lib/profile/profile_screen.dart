@@ -50,8 +50,7 @@ class _ProfilePageState extends State<ProfilePage> {
               StreamBuilder(
                 stream: FirebaseDatabase.instance.ref("users/$userId").onValue,
                 builder: (context, snapshot) {
-                  if (snapshot.hasData &&
-                      snapshot.data!.snapshot.value != null) {
+                  if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
                     final data = snapshot.data!.snapshot.value as Map;
 
                     // Mendapatkan username dan URL gambar profil dari Firebase
@@ -101,8 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     context: context,
                     isScrollControlled: true,
                     shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     builder: (context) => BugReportModal(),
                   );
