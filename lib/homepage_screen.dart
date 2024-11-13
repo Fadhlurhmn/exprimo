@@ -197,7 +197,11 @@ class Homepage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => CameraScreen()),
+                                  builder: (context) => CameraScreen(
+                                    expressionItem: ExpressionItem(
+                                        'Senang', 'Mudah', false),
+                                  ),
+                                ),
                               );
                             },
                             icon: Icon(
