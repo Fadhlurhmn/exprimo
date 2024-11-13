@@ -52,7 +52,9 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
 
       try {
         // Update username di Firebase
-        await usersRef.child(userId).update({'username': _usernameController.text});
+        await usersRef
+            .child(userId)
+            .update({'username': _usernameController.text});
 
         // Update username di SharedPreferences
         await prefs.setString('username', _usernameController.text);
@@ -81,7 +83,8 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
             Navigator.pop(context);
           },
         ),
-        title: const Text('Edit Username', style: TextStyle(color: Colors.black)),
+        title:
+            const Text('Edit Username', style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
       body: Padding(
@@ -90,7 +93,8 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 30),
-            const Text('Username', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Username',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             TextField(
               controller: _usernameController,
@@ -112,15 +116,20 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
               child: ElevatedButton(
                 onPressed: _isButtonEnabled ? _updateUsername : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isButtonEnabled ? Colors.pink[300] : Colors.grey,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  backgroundColor:
+                      _isButtonEnabled ? Colors.pink[300] : Colors.grey,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: const Text(
                   'Reset Username',
-                  style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -135,7 +144,8 @@ class _EditUsernamePageState extends State<EditUsernamePage> {
     DatabaseEvent event = await usersRef.once();
 
     if (event.snapshot.value != null) {
-      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+      Map<dynamic, dynamic> users =
+          event.snapshot.value as Map<dynamic, dynamic>;
       for (var user in users.values) {
         if (user['username'] == username) {
           return true; // Username sudah ada

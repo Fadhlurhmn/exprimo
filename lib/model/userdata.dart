@@ -68,11 +68,14 @@ Future<void> tambahUser(User user) async {
 // Fungsi untuk mengunggah gambar profil ke Firebase Storage dan mendapatkan URL
 Future<String?> uploadProfileImage(String userId, File imageFile) async {
   try {
-    final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
+    final storageRef =
+        FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
     await storageRef.putFile(imageFile);
 
     String downloadUrl = await storageRef.getDownloadURL();
-    await database.ref("users/$userId").update({'profileImageUrl': downloadUrl});
+    await database
+        .ref("users/$userId")
+        .update({'profileImageUrl': downloadUrl});
     return downloadUrl;
   } catch (e) {
     print("Error uploading profile image: $e");

@@ -43,7 +43,8 @@ class _UbahEmailPageState extends State<UbahEmailPage> {
       try {
         DatabaseEvent event = await usersRef.child(userId!).once();
         if (event.snapshot.value != null) {
-          Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
+          Map<dynamic, dynamic> userData =
+              event.snapshot.value as Map<dynamic, dynamic>;
 
           setState(() {
             currentHashedPassword = userData['password']?.toString();
@@ -164,10 +165,13 @@ class _UbahEmailPageState extends State<UbahEmailPage> {
                   // Tombol Konfirmasi Password
                   Center(
                     child: ElevatedButton(
-                      onPressed: isButtonEnabled ? _verifyPasswordAndNavigate : null,
+                      onPressed:
+                          isButtonEnabled ? _verifyPasswordAndNavigate : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isButtonEnabled ? Colors.pink[300] : Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        backgroundColor:
+                            isButtonEnabled ? Colors.pink[300] : Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),

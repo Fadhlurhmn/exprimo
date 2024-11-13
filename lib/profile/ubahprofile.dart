@@ -36,7 +36,8 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
     if (userId != null) {
       DatabaseEvent event = await usersRef.child(userId!).once();
       if (event.snapshot.value != null) {
-        Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
+        Map<dynamic, dynamic> userData =
+            event.snapshot.value as Map<dynamic, dynamic>;
         setState(() {
           currentUsername = userData['username'] ?? 'Unknown';
           currentEmail = userData['email'] ?? 'Unknown';
@@ -47,7 +48,8 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -59,8 +61,9 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
   Future<void> _uploadImageToFirebase() async {
     if (_imageFile != null && userId != null) {
       try {
-        final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
-        
+        final storageRef =
+            FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
+
         // Upload file ke Firebase Storage
         await storageRef.putFile(_imageFile!);
 
@@ -119,7 +122,8 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                   radius: 50,
                   backgroundImage: profileImageUrl.isNotEmpty
                       ? NetworkImage(profileImageUrl)
-                      : const AssetImage('assets/placeholder_profile.png') as ImageProvider,
+                      : const AssetImage('assets/placeholder_profile.png')
+                          as ImageProvider,
                 ),
                 Positioned(
                   bottom: 0,
@@ -160,7 +164,8 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                 final updatedUsername = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditUsernamePage(username: currentUsername),
+                    builder: (context) =>
+                        EditUsernamePage(username: currentUsername),
                   ),
                 );
                 if (updatedUsername != null && updatedUsername is String) {
@@ -230,7 +235,8 @@ class ProfileItem extends StatelessWidget {
                     const SizedBox(height: 5),
                     Text(
                       value,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
