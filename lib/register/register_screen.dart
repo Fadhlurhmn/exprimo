@@ -1,9 +1,10 @@
+import 'package:exprimo/login/login_screen.dart';
 import 'package:exprimo/welcome/welcome_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'package:exprimo/login/login_screen.dart';
+import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -26,8 +27,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? usernameError;
   String? passwordError;
 
-  bool isRegisterButtonPressed = false;
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -38,9 +37,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             children: [
               Align(
-                alignment: Alignment.centerLeft,  
+                alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: EdgeInsets.only(left: size.width * 0.05),  
+                  padding: EdgeInsets.only(left: size.width * 0.05),
                   child: IconButton(
                     icon: Icon(
                       Icons.arrow_back,
@@ -72,10 +71,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 "assets/images/smile.png",
                 width: size.width * 0.5,
               ),
-              
               SizedBox(height: size.height * 0.02),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: size.width * 0.05), // Adjusted padding here
+                padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
                 child: Text(
                   'Yuk, register atau login sekarang untuk akses penuh ke semua fitur menarik di Exprimo!',
                   textAlign: TextAlign.center,
@@ -87,7 +85,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               SizedBox(height: size.height * 0.04),
-              // Row dengan tombol Login dan Register
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -153,7 +150,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ],
               ),
-              // Form section
               Container(
                 height: size.height * 0.48,
                 color: secondaryColor,
@@ -191,9 +187,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       SizedBox(height: size.height * 0.04),
                       ElevatedButton(
                         onPressed: () async {
+                          setState(() {
+                            emailError = null;
+                            usernameError = null;
+                            passwordError = null;
+                          });
+
                           if (_formKey.currentState?.validate() ?? false) {
-                            String email = emailController.text;
-                            String username = usernameController.text;
+                            String email = emailController.text.trim();
+                            String username = usernameController.text.trim();
                             String password = passwordController.text;
 
                             bool emailExists = await checkEmailExists(email);
@@ -203,20 +205,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               setState(() {
                                 emailError = 'Email sudah terdaftar';
                               });
+                              return;
                             } else if (usernameExists) {
                               setState(() {
                                 usernameError = 'Username sudah terdaftar';
                               });
-                            } else {
-                              String hashedPassword = hashPassword(password);
+                              return;
+                            }
 
+                            String hashedPassword = hashPassword(password);
+
+                            try {
                               await usersRef.push().set({
                                 'email': email,
                                 'username': username,
                                 'password': hashedPassword,
                               });
 
-                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Registrasi berhasil!')),
+                              );
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => LoginScreen()),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Terjadi kesalahan: $e')),
+                              );
                             }
                           }
                         },
@@ -253,29 +269,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Harap masukkan email.';
+      return 'Silakan masukkan email.';
     }
     if (!value.endsWith('@gmail.com')) {
       return 'Masukkan email anda';
     }
-    return null;
+    return null; // Jika valid
   }
 
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Harap masukkan username.';
+      return 'Silakan masukkan username.';
     }
-    return null;
+    return null; // Jika valid
   }
 
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Harap masukkan password.';
+      return 'Silakan masukkan password.';
     }
     if (value.length < 8) {
       return 'Password harus terdiri dari minimal 8 karakter.';
     }
-    return null;
+    return null; // Jika valid
   }
 
   Widget _buildTextField({
@@ -291,7 +307,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: double.infinity,
+          width: double.infinity,  // Menjamin lebar penuh
           padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
           child: TextFormField(
             controller: controller,
@@ -301,29 +317,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),  // Sesuaikan padding untuk semua kolom
               filled: true,
               fillColor: Colors.white,
               prefixIcon: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Image.asset(
                   icon,
-                  width: 30,
-                  height: 30,
+                  width: 30,  // Ukuran ikon 30
+                  height: 30, // Ukuran ikon 30
                 ),
               ),
+
             ),
             validator: validator,
           ),
         ),
         if (errorText != null)
           Padding(
-            padding: EdgeInsets.only(top: 8.0),
+            padding: EdgeInsets.only(top: size.height * 0.005, left: size.width * 0.03),
             child: Text(
               errorText,
               style: TextStyle(
                 color: Colors.red,
-                fontSize: 12,
+                fontSize: size.width * 0.035,
               ),
             ),
           ),
@@ -332,16 +349,109 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<bool> checkEmailExists(String email) async {
-    DataSnapshot snapshot = await usersRef.orderByChild('email').equalTo(email).get();
-    return snapshot.exists;
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['email'] == email) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   Future<bool> checkUsernameExists(String username) async {
-    DataSnapshot snapshot = await usersRef.orderByChild('username').equalTo(username).get();
-    return snapshot.exists;
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['username'] == username) {
+          return true; // Username sudah ada
+        }
+      }
+    }
+    return false; // Username tidak ada
   }
 
   String hashPassword(String password) {
-    return sha256.convert(utf8.encode(password)).toString();
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Widget _buildRegisterButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () async {
+          setState(() {
+            emailError = _validateEmail(emailController.text);
+            usernameError = _validateUsername(usernameController.text);
+            passwordError = _validatePassword(passwordController.text);
+          });
+
+          if (emailError == null && usernameError == null && passwordError == null) {
+            bool emailExists = await checkEmailExists(emailController.text);
+            if (emailExists) {
+              setState(() {
+                emailError = 'Email yang Anda masukkan sudah terdaftar.';
+              });
+              return; // Keluar dari fungsi jika email sudah ada
+            }
+
+            bool usernameExists = await checkUsernameExists(usernameController.text);
+            if (usernameExists) {
+              setState(() {
+                usernameError = 'Username yang Anda masukkan sudah terdaftar.';
+              });
+              return; // Keluar dari fungsi jika username sudah ada
+            }
+
+            // Hashing password sebelum disimpan
+            String hashedPassword = hashPassword(passwordController.text);
+
+            // Simpan data user ke Firebase Realtime Database jika email belum ada
+            await usersRef.push().set({
+              "email": emailController.text,
+              "username": usernameController.text,
+              "password": hashedPassword,
+            }).then((_) {
+              print("User berhasil ditambahkan!");
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            }).catchError((error) {
+              print("Gagal menambahkan user: $error");
+            });
+          }
+        },
+        child: Text(
+          'Register',
+          style: TextStyle(
+            color: secondaryColor,
+            fontSize: 20,
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          padding: EdgeInsets.symmetric(vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }
