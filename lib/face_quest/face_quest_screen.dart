@@ -1,5 +1,6 @@
 import 'package:exprimo/constants.dart';
 import 'package:exprimo/face_quest/expression_result_screen.dart';
+import 'package:exprimo/homepage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
@@ -13,7 +14,12 @@ class FaceQuestScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Homepage(),
+              ),
+            );
           },
         ),
         title: Text('Face Quest'),
@@ -315,11 +321,18 @@ class _CameraScreenState extends State<CameraScreen> {
         _capturedImage = File(image.path);
       });
 
+      // Di sini Anda seharusnya melakukan deteksi ekspresi dari gambar yang diambil
+      // Untuk contoh ini, kita akan menggunakan nama ekspresi yang dipilih
+      String detectedExpression =
+          widget.expressionItem.name; // Ganti dengan hasil deteksi ekspresi
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ExpressionResultScreen(
             imageFile: _capturedImage!,
-            detectedExpression: 'Happy',
+            detectedExpression: detectedExpression,
+            expectedExpression:
+                widget.expressionItem.name, // Ekspresi yang diharapkan
           ),
         ),
       );
@@ -403,11 +416,17 @@ class _CameraScreenState extends State<CameraScreen> {
       final image = await _controller!.takePicture();
       File capturedImage = File(image.path);
 
+      // Menggunakan nama ekspresi yang diharapkan dari item ekspresi yang dipilih
+      String expectedExpression = widget.expressionItem.name;
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ExpressionResultScreen(
             imageFile: capturedImage,
-            detectedExpression: widget.expressionItem.name,
+            detectedExpression:
+                expectedExpression, // Anda mungkin ingin mengganti ini dengan hasil deteksi ekspresi yang sebenarnya
+            expectedExpression:
+                expectedExpression, // Kirimkan ekspresi yang diharapkan
           ),
         ),
       );

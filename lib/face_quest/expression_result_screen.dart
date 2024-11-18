@@ -1,77 +1,75 @@
-import 'dart:io';
+import 'dart:math';
+
 import 'package:exprimo/face_quest/face_quest_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class ExpressionResultScreen extends StatelessWidget {
   final File imageFile;
   final String detectedExpression;
+  final String expectedExpression;
 
-  ExpressionResultScreen(
-      {required this.imageFile, required this.detectedExpression});
+  const ExpressionResultScreen({
+    Key? key,
+    required this.imageFile,
+    required this.detectedExpression,
+    required this.expectedExpression,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Tentukan apakah ekspresi sesuai
+    bool isSuccess =
+        detectedExpression.toLowerCase() == expectedExpression.toLowerCase();
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Ekspresi $detectedExpression'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+      appBar: AppBar(title: Text('Hasil Ekspresi')),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Menggunakan Transform untuk membalik gambar
+            Transform(
+              alignment: Alignment.center,
+              transform:
+                  Matrix4.rotationY(pi), // Membalik gambar secara horizontal
+              child: Image.file(imageFile),
+            ),
+            SizedBox(height: 20),
+            Text(
+              isSuccess ? 'Sukses!' : 'Gagal!',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: isSuccess ? Colors.green : Colors.red),
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(
+                  bottom: 20.0), // Tambahkan padding di bawah
+              child: ElevatedButton(
+                onPressed: isSuccess
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FaceQuestScreen(),
+                          ),
+                        );
+                      }
+                    : null, // Nonaktifkan tombol jika gagal
+                child: Text('Next'),
+              ),
+            ),
+            if (!isSuccess) // Tampilkan tombol untuk mengambil gambar lagi
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Kembali ke halaman kamera
+                },
+                child: Text('Ambil Gambar Lagi'),
+              ),
+          ],
         ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text('Detected Expression: $detectedExpression',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Stack(
-                    alignment: Alignment.topLeft,
-                    children: [
-                      Image.file(imageFile), // Display the captured image
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Icon(
-                          Icons.emoji_emotions,
-                          color: Colors.orange,
-                          size: 80, // Emoji to represent the expression
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Text('Successfully', style: TextStyle(color: Colors.green)),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FaceQuestScreen(),
-                  ),
-                );
-              },
-              child: Text('Next'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
