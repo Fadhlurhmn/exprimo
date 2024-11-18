@@ -1,24 +1,82 @@
 import 'dart:io';
+import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:exprimo/constants.dart'; // pastikan ini adalah import yang sesuai untuk variabel warna
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class DisplayImagePage extends StatelessWidget {
+class DisplayImagePage extends StatefulWidget {
   final String imagePath;
 
-  DisplayImagePage({required this.imagePath});
+  const DisplayImagePage({super.key, required this.imagePath});
 
-  // Fungsi untuk mendownload gambar
-  Future<void> downloadImage(String imagePath) async {
-    try {
-      final directory = await getExternalStorageDirectory();
-      final fileName = imagePath.split('/').last;
-      final newFile = File('${directory?.path}/$fileName');
-      final imageBytes = await File(imagePath).readAsBytes();
-      await newFile.writeAsBytes(imageBytes);
-      print("Gambar berhasil didownload ke: ${newFile.path}");
-    } catch (e) {
-      print("Terjadi kesalahan saat mendownload gambar: $e");
+  @override
+  _DisplayImagePageState createState() => _DisplayImagePageState();
+}
+
+class _DisplayImagePageState extends State<DisplayImagePage> {
+  String? username;
+  String? userId; // ID pengguna yang sedang login
+  DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+  late String imageName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // Fungsi untuk memuat userId dan username dari SharedPreferences dan Firebase
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId'); // Ambil userId dari SharedPreferences
+
+    if (userId != null) {
+      // Ambil username dari Firebase menggunakan userId
+      DatabaseEvent event = await usersRef.child(userId!).once();
+      if (event.snapshot.value != null) {
+        Map userData = event.snapshot.value as Map;
+        setState(() {
+          username = userData['username']; // Ambil username dari data pengguna
+          // Membuat nama file dengan format: username_tanggal_jam.jpg
+          if (username != null) {
+            String date = DateTime.now().toIso8601String().split("T")[0]; // Format yyyy-MM-dd
+            String time = DateTime.now().toIso8601String().split("T")[1].split(".")[0]; // Format HH:mm:ss
+            time = time.replaceAll(":", "-"); // Ganti ':' dengan '-' agar aman untuk nama file
+            imageName = '$username' + '_' + '$date' + '_' + '$time' + '.jpg';
+          }
+        });
+      }
+    }
+
+    // Panggil fungsi upload gambar setelah username diambil
+    if (username != null) {
+      _uploadImageToFirebase();
+    }
+  }
+
+  // Fungsi untuk meng-upload gambar ke Firebase Storage
+  Future<void> _uploadImageToFirebase() async {
+    if (username != null && userId != null) {
+      try {
+        // Ambil referensi Firebase Storage untuk upload gambar
+        final storageRef = FirebaseStorage.instance.ref().child('import/$username/$imageName');
+        
+        // Upload file gambar
+        await storageRef.putFile(File(widget.imagePath));
+
+        // Ambil URL gambar setelah di-upload
+        String downloadUrl = await storageRef.getDownloadURL();
+
+        // Simpan URL gambar di Firebase Realtime Database
+        await usersRef.child(userId!).update({
+          'profileImageUrl': downloadUrl,
+        });
+
+        print("Gambar berhasil di-upload ke Firebase: $downloadUrl");
+      } catch (e) {
+        print("Error uploading image: $e");
+      }
     }
   }
 
@@ -29,36 +87,34 @@ class DisplayImagePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tampilkan Gambar'),
-        backgroundColor: secondaryColor, // Sesuaikan warna app bar
+        title: Text('Hasil Scan'),
+        backgroundColor: secondaryColor,
       ),
       body: Column(
         children: [
-          // Menambahkan Spacer untuk mendorong gambar lebih ke atas
-          Spacer(flex: 1), 
-          // Menampilkan gambar dengan ukuran setengah layar
+          Spacer(flex: 1),
           Center(
             child: Image.file(
-              File(imagePath),
-              width: MediaQuery.of(context).size.width * 0.75, // Setel lebar gambar menjadi 75% lebar layar
-              height: MediaQuery.of(context).size.height * 0.75, // Setel tinggi gambar menjadi 60% tinggi layar
-              fit: BoxFit.contain, // Menjaga rasio aspek gambar tetap utuh
+              File(widget.imagePath),
+              width: screenWidth * 0.75,
+              height: MediaQuery.of(context).size.height * 0.75,
+              fit: BoxFit.contain,
             ),
           ),
           SizedBox(height: 10),
           Container(
-            width: 300, 
+            width: 300,
             child: ElevatedButton(
               onPressed: () {
-                downloadImage(imagePath); 
+                _uploadImageToFirebase();
               },
               child: Text(
-                'Download',
+                'Upload Gambar',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 24,
                   fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -71,7 +127,7 @@ class DisplayImagePage extends StatelessWidget {
               ),
             ),
           ),
-          Spacer(flex: 2), // Memberikan ruang di bawah tombol untuk mendorong elemen lebih ke atas
+          Spacer(flex: 2),
         ],
       ),
     );
