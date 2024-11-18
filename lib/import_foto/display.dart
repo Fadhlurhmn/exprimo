@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:dio/dio.dart';
 
 class DisplayImagePage extends StatefulWidget {
   final String imagePath;
@@ -16,9 +19,11 @@ class DisplayImagePage extends StatefulWidget {
 
 class _DisplayImagePageState extends State<DisplayImagePage> {
   String? username;
-  String? userId; // ID pengguna yang sedang login
+  String? userId;
   DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
   late String imageName;
+  late String downloadUrl = ""; // URL gambar dari Firebase
+  bool isLoading = true; // Status loading
 
   @override
   void initState() {
@@ -26,63 +31,127 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
     _loadUserData();
   }
 
-  // Fungsi untuk memuat userId dan username dari SharedPreferences dan Firebase
+  // Memuat data pengguna dan mengatur nama file gambar
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId = prefs.getString('userId'); // Ambil userId dari SharedPreferences
+    userId = prefs.getString('userId');
 
     if (userId != null) {
-      // Ambil username dari Firebase menggunakan userId
       DatabaseEvent event = await usersRef.child(userId!).once();
       if (event.snapshot.value != null) {
         Map userData = event.snapshot.value as Map;
         setState(() {
-          username = userData['username']; // Ambil username dari data pengguna
-          // Membuat nama file dengan format: username_tanggal_jam.jpg
+          username = userData['username'];
           if (username != null) {
-            String date = DateTime.now().toIso8601String().split("T")[0]; // Format yyyy-MM-dd
-            String time = DateTime.now().toIso8601String().split("T")[1].split(".")[0]; // Format HH:mm:ss
-            time = time.replaceAll(":", "-"); // Ganti ':' dengan '-' agar aman untuk nama file
+            String date = DateTime.now().toIso8601String().split("T")[0];
+            String time = DateTime.now().toIso8601String().split("T")[1].split(".")[0];
+            time = time.replaceAll(":", "-");
             imageName = '$username' + '_' + '$date' + '_' + '$time' + '.jpg';
           }
         });
       }
     }
 
-    // Panggil fungsi upload gambar setelah username diambil
     if (username != null) {
-      _uploadImageToFirebase();
+      await _uploadImageToFirebase();
+      await _getImageUrlFromFirebase();
     }
   }
 
-  // Fungsi untuk meng-upload gambar ke Firebase Storage
+  // Upload gambar ke Firebase
   Future<void> _uploadImageToFirebase() async {
-    if (username != null && userId != null) {
-      try {
-        // Ambil referensi Firebase Storage untuk upload gambar
-        final storageRef = FirebaseStorage.instance.ref().child('import/$username/$imageName');
-        
-        // Upload file gambar
-        await storageRef.putFile(File(widget.imagePath));
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('import/$username/$imageName');
+      await storageRef.putFile(File(widget.imagePath));
+      print("Gambar berhasil di-upload.");
+    } catch (e) {
+      print("Error uploading image: $e");
+    }
+  }
 
-        // Ambil URL gambar setelah di-upload
-        String downloadUrl = await storageRef.getDownloadURL();
+  // Mendapatkan URL gambar dari Firebase
+  Future<void> _getImageUrlFromFirebase() async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('import/$username/$imageName');
+      String url = await storageRef.getDownloadURL();
+      setState(() {
+        downloadUrl = url;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching image URL: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
-        // Simpan URL gambar di Firebase Realtime Database
-        await usersRef.child(userId!).update({
-          'profileImageUrl': downloadUrl,
-        });
+  // Meminta izin akses penyimpanan
+  Future<bool> _requestStoragePermission() async {
+    var status = await Permission.storage.status;
+    if (status.isDenied || status.isPermanentlyDenied) {
+      // Meminta izin jika belum diberikan
+      status = await Permission.storage.request();
+    }
+    return status.isGranted;
+  }
 
-        print("Gambar berhasil di-upload ke Firebase: $downloadUrl");
-      } catch (e) {
-        print("Error uploading image: $e");
+  // Mendownload gambar ke penyimpanan lokal ponsel
+  Future<void> _downloadImageToLocal() async {
+    if (downloadUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('URL gambar belum tersedia. Coba lagi nanti.')),
+      );
+      return;
+    }
+
+    // Memastikan izin telah diberikan
+    bool isPermissionGranted = await _requestStoragePermission();
+    if (!isPermissionGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Izin penyimpanan diperlukan untuk mendownload gambar.')),
+      );
+      return;
+    }
+
+    try {
+      Directory? directory = await getExternalStorageDirectory();
+      String newPath = "";
+      List<String> paths = directory!.path.split("/");
+      for (int i = 1; i < paths.length; i++) {
+        String folder = paths[i];
+        if (folder != "Android") {
+          newPath += "/$folder";
+        } else {
+          break;
+        }
       }
+      newPath += "/Download"; // Menyimpan di folder Download
+      Directory downloadDir = Directory(newPath);
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
+
+      String filePath = '${downloadDir.path}/$imageName';
+
+      Dio dio = Dio();
+      await dio.download(downloadUrl, filePath);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gambar berhasil diunduh ke $filePath')),
+      );
+
+      print("Gambar berhasil diunduh ke $filePath");
+    } catch (e) {
+      print("Error downloading image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengunduh gambar')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Mendapatkan lebar layar
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -104,28 +173,28 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
           SizedBox(height: 10),
           Container(
             width: 300,
-            child: ElevatedButton(
-              onPressed: () {
-                _uploadImageToFirebase();
-              },
-              child: Text(
-                'Upload Gambar',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 24,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF5DADA),
-                foregroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
+            child: isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _downloadImageToLocal,
+                    child: Text(
+                      'Download Gambar',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 24,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFF5DADA),
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
           ),
           Spacer(flex: 2),
         ],
