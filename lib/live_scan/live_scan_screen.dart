@@ -4,6 +4,7 @@ import 'package:exprimo/constants.dart';
 import 'package:exprimo/live_scan/display.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_storage/firebase_storage.dart'; // Firebase Storage
 import 'dart:math' as math;
 
 class LiveScanPage extends StatefulWidget {
@@ -59,24 +60,32 @@ class _LiveScanPageState extends State<LiveScanPage> {
     super.dispose();
   }
 
-  Future<String?> takePicture() async {
+  Future<String?> takePictureAndUpload() async {
     if (_controller == null || !_controller!.value.isInitialized) {
       print('Controller not initialized');
       return null;
     }
 
-    Directory root = await getTemporaryDirectory();
-    String directoryPath = '${root.path}/Guided_Camera';
-    await Directory(directoryPath).create(recursive: true);
-
-    String filePath = '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
     try {
       XFile imageFile = await _controller!.takePicture();
-      await File(imageFile.path).copy(filePath);
-      return filePath;
+
+      // Simpan sementara ke lokal
+      Directory root = await getTemporaryDirectory();
+      String directoryPath = '${root.path}/Guided_Camera';
+      await Directory(directoryPath).create(recursive: true);
+      String localFilePath = '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      File localFile = await File(imageFile.path).copy(localFilePath);
+
+      // Upload ke Firebase
+      String firebasePath = 'images/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference storageRef = FirebaseStorage.instance.ref(firebasePath);
+      await storageRef.putFile(localFile);
+
+      // Ambil URL publik untuk unduhan
+      String downloadURL = await storageRef.getDownloadURL();
+      return downloadURL;
     } catch (e) {
-      print('Error taking picture: $e');
+      print('Error taking or uploading picture: $e');
       return null;
     }
   }
@@ -152,12 +161,12 @@ class _LiveScanPageState extends State<LiveScanPage> {
                               ),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  String? imagePath = await takePicture();
-                                  if (imagePath != null) {
+                                  String? imageURL = await takePictureAndUpload();
+                                  if (imageURL != null) {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => DisplayImagePage(imagePath: imagePath),
+                                        builder: (context) => DisplayImagePage(imageURL: imageURL),
                                       ),
                                     );
                                   }
