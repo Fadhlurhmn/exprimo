@@ -6,22 +6,8 @@ class ScanningScreen extends StatelessWidget {
 
   const ScanningScreen({required this.imageFile});
 
-  void _navigateToResultScreen(BuildContext context) {
-    // Navigate to the result screen after detection (for now we'll simulate it)
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultScreen(imageFile: imageFile),
-        ),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    _navigateToResultScreen(context); // Automatically navigate after a delay
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Scanning"),
@@ -61,22 +47,10 @@ class ScanningScreen extends StatelessWidget {
 
 class ResultScreen extends StatelessWidget {
   final File imageFile;
+  final String detectedExpression;
 
-  const ResultScreen({required this.imageFile});
-
-  void _downloadImage(BuildContext context) {
-    // Code for downloading the image can be added here
-    // For example, using the `path_provider` package to save the image locally
-    print("Download clicked! Implement download functionality.");
-
-    // Show success message after download
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Download successfully!"),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
+  const ResultScreen(
+      {required this.imageFile, required this.detectedExpression});
 
   @override
   Widget build(BuildContext context) {
@@ -104,14 +78,9 @@ class ResultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              "Detected Expression: Happy", // Replace with dynamic result
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _downloadImage(context),
-              child: const Text("Download"),
+            Text(
+              "Detected Expression: $detectedExpression",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),

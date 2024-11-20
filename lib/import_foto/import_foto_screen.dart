@@ -1,24 +1,21 @@
 import 'dart:io';
-import 'package:exprimo/constants.dart';
-import 'package:exprimo/import_foto/display.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
+import 'package:dio/dio.dart';
+import 'scanfoto.dart'; // Pastikan file ini ada di direktori yang benar
 
 class ImportFotoScreen extends StatefulWidget {
   @override
   _ImportFotoScreenState createState() => _ImportFotoScreenState();
 }
 
-
-
 class _ImportFotoScreenState extends State<ImportFotoScreen> {
   File? _imageFile;
 
-  // Function to pick an image from the gallery
+  // Fungsi untuk memilih gambar dari galeri
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -26,14 +23,48 @@ class _ImportFotoScreenState extends State<ImportFotoScreen> {
     }
   }
 
-  // Function to handle scanning (you can implement your scanning functionality here)
-  void _startScan() {
-    if (_imageFile != null) {
-      // Add your scan logic here (like starting a scan on the image)
-      print('Scan started on image: ${_imageFile!.path}');
+  // Fungsi untuk mengirim gambar ke server Flask
+  Future<void> _sendImageToFlask(File imageFile) async {
+    final String flaskUrl = 'http://192.168.1.9:5000/predict'; // Endpoint Flask
+
+    try {
+      // Membuat form data untuk dikirim ke server
+      FormData formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(imageFile.path,
+            filename: 'uploaded_image.jpg'),
+      });
+
+      // Kirim permintaan POST ke server Flask
+      Response response = await Dio().post(flaskUrl, data: formData);
+
+      if (response.statusCode == 200) {
+        final detectedExpression = response.data['expression'];
+        print("Ekspresi terdeteksi: $detectedExpression");
+
+        // Navigasi ke halaman hasil
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultScreen(
+              imageFile: imageFile,
+              detectedExpression: detectedExpression,
+            ),
+          ),
+        );
+      } else {
+        print("Error: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Gagal menganalisis gambar. Coba lagi nanti.")),
+        );
+      }
+    } catch (e) {
+      print("Gagal mengirim gambar: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Terjadi kesalahan saat mengirim gambar.")),
+      );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -42,44 +73,36 @@ class _ImportFotoScreenState extends State<ImportFotoScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Import Foto'),
+            const Text('Import Foto'),
             SizedBox(width: 10),
-            // Scan Button, only enabled when there is an image
             ElevatedButton(
-              onPressed: _imageFile != null 
+              onPressed: _imageFile != null
                   ? () {
-                      // Navigate to the DisplayImagePage
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DisplayImagePage(imagePath: _imageFile!.path),
-                        ),
-                      );
+                      // Kirim gambar ke Flask
+                      _sendImageToFlask(_imageFile!);
                     }
-                  : null, // Only enable button if an image is selected
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: Colors.black, // Set text color to black
+                foregroundColor: Colors.black,
               ),
-              child: Text('Scan'),
-            )
-
+              child: const Text('Scan'),
+            ),
           ],
         ),
-        backgroundColor: secondaryColor,
+        backgroundColor: const Color(0xFFEFBEBE),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Display the picked image if available, else show placeholder
             _imageFile == null
                 ? Container(
                     height: 200,
                     width: 200,
-                    color: Colors.grey[300], // Light grey background for placeholder
-                    child: Center(
+                    color: Colors.grey[300],
+                    child: const Center(
                       child: Icon(
                         Icons.camera_alt,
                         color: Colors.white,
@@ -87,35 +110,23 @@ class _ImportFotoScreenState extends State<ImportFotoScreen> {
                       ),
                     ),
                   )
-                : GestureDetector(
-                    onTap: () {
-                      // When tapped, show the image in fullscreen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FullScreenImage(imageFile: _imageFile!),
-                        ),
-                      );
-                    },
-                    child: Image.file(
-                      _imageFile!,
-                      width: MediaQuery.of(context).size.width * 0.75, // Set width to 50% of screen width
-                      height: MediaQuery.of(context).size.height * 0.75, // Set height to 50% of screen height
-                      fit: BoxFit.contain, // This ensures the image scales properly without overflow
-                    ),
+                : Image.file(
+                    _imageFile!,
+                    width: MediaQuery.of(context).size.width * 0.75,
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    fit: BoxFit.contain,
                   ),
-            SizedBox(height: 10), // Slight space between image and button
-            // Button to pick image
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _pickImage,
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 50),
-                backgroundColor: secondaryColor,
+                minimumSize: const Size(200, 50),
+                backgroundColor: const Color(0xFFEFBEBE),
               ),
-              child: Text(
+              child: const Text(
                 'Pilih Foto dari Galeri',
                 style: TextStyle(
-                  color: primaryColor,
+                  color: Colors.white,
                   fontSize: 15,
                   fontFamily: 'Nunito',
                   fontWeight: FontWeight.w400,
@@ -124,37 +135,6 @@ class _ImportFotoScreenState extends State<ImportFotoScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class FullScreenImage extends StatelessWidget {
-  final File imageFile;
-
-  FullScreenImage({required this.imageFile});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text('View Image'),
-      ),
-      body: PhotoViewGallery.builder(
-        itemCount: 1,
-        builder: (context, index) {
-          return PhotoViewGalleryPageOptions(
-            imageProvider: FileImage(imageFile),
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered,
-          );
-        },
-        scrollPhysics: BouncingScrollPhysics(),
-        backgroundDecoration: BoxDecoration(
-          color: Colors.black,
-        ),
-        pageController: PageController(),
       ),
     );
   }
