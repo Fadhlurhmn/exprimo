@@ -13,7 +13,8 @@ class _BottomNavExampleState extends State<Navigation_menu> {
 
   // Daftar halaman yang akan ditampilkan berdasarkan item yang dipilih di BottomNavigationBar
   static List<Widget> _pages = <Widget>[
-    Homepage(),
+    HomePage(),
+    
     FilesPage(),
     ProfilePage(),
   ];

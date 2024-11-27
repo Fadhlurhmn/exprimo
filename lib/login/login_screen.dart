@@ -1,3 +1,4 @@
+import 'package:exprimo/files/file_screen.dart';
 import 'package:exprimo/login/forgot_password.dart';
 import 'package:exprimo/model/userdata.dart';
 import 'package:exprimo/navigation.dart';
@@ -6,6 +7,7 @@ import 'package:exprimo/welcome/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:exprimo/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
+    print("Retrieved userId: $userId");  // Log nilai yang diambil
     if (userId != null) {
       Navigator.pushReplacement(
         context,
@@ -37,6 +40,42 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
+
+  Future<bool> login(String username, String password) async {
+    try {
+      DatabaseReference userRef = FirebaseDatabase.instance.ref('users');
+      DatabaseEvent event = await userRef.orderByChild('username').equalTo(username).once();
+      DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.exists) {
+        print('Username ditemukan: $username');
+        Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
+        String storedPasswordHash = userData.values.first['password'];  // Password yang sudah di-hash
+
+        // Hash password yang dimasukkan pengguna
+        String hashedPassword = hashPassword(password);
+
+        if (storedPasswordHash == hashedPassword) {
+          String userId = userData.keys.first;
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', userId);
+          print("User ID stored: $userId");
+
+          return true;
+        } else {
+          print('Password salah');
+          return false;
+        }
+      } else {
+        print('Username tidak ditemukan');
+        return false;
+      }
+    } catch (e) {
+      print("Error: $e");
+      return false;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -285,20 +324,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                 passwordController.text,
                               );
                               if (success) {
+                                // Arahkan ke menu navigasi setelah login berhasil
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => Navigation_menu(),
+                                    //builder: (context) => FilesPage(username: usernameController.text), // Pass username
                                   ),
                                 );
                               } else {
+                                // Jika login gagal, tampilkan error
                                 setState(() {
                                   loginError = true;
                                 });
-                                _formKey.currentState!.validate();
+                                _formKey.currentState!.validate();  // Trigger revalidation untuk menampilkan pesan error
                               }
                             }
                           },
+
                           child: Text(
                             'Login',
                             style: TextStyle(

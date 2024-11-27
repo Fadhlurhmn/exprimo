@@ -4,8 +4,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool isRegisterPressed;
@@ -49,7 +49,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => WelcomeScreen()),
                       );
                     },
                   ),
@@ -109,7 +110,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
+                        padding:
+                            EdgeInsets.symmetric(vertical: size.height * 0.02),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(10),
@@ -139,7 +141,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: secondaryColor,
-                        padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
+                        padding:
+                            EdgeInsets.symmetric(vertical: size.height * 0.02),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
@@ -199,7 +202,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             String password = passwordController.text;
 
                             bool emailExists = await checkEmailExists(email);
-                            bool usernameExists = await checkUsernameExists(username);
+                            bool usernameExists =
+                                await checkUsernameExists(username);
 
                             if (emailExists) {
                               setState(() {
@@ -216,22 +220,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             String hashedPassword = hashPassword(password);
 
                             try {
-                              await usersRef.push().set({
+                              // Menambahkan data pengguna ke Firebase Realtime Database
+                              var newUserRef = usersRef.push();  // Mendapatkan referensi untuk pengguna baru
+                              String userId = newUserRef.key!;    // Mendapatkan userId (key dari pengguna baru)
+
+                              await newUserRef.set({
                                 'email': email,
                                 'username': username,
                                 'password': hashedPassword,
                               });
+
+                              // Menyimpan userId ke SharedPreferences
+                              await _saveUserIdToSharedPreferences(userId);
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Registrasi berhasil!')),
                               );
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (context) => LoginScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) => LoginScreen()),
                               );
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Terjadi kesalahan: $e')),
+                                SnackBar(
+                                    content: Text('Terjadi kesalahan: $e')),
                               );
                             }
                           }
@@ -253,7 +266,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          minimumSize: Size(size.width * 0.8, size.height * 0.07),
+                          minimumSize:
+                              Size(size.width * 0.8, size.height * 0.07),
                         ),
                       ),
                     ],
@@ -307,7 +321,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: double.infinity,  // Menjamin lebar penuh
+          width: double.infinity, // Menjamin lebar penuh
           padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
           child: TextFormField(
             controller: controller,
@@ -317,25 +331,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),  // Sesuaikan padding untuk semua kolom
+              contentPadding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16), // Sesuaikan padding untuk semua kolom
               filled: true,
               fillColor: Colors.white,
               prefixIcon: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Image.asset(
                   icon,
-                  width: 30,  // Ukuran ikon 30
+                  width: 30, // Ukuran ikon 30
                   height: 30, // Ukuran ikon 30
                 ),
               ),
-
             ),
             validator: validator,
           ),
         ),
         if (errorText != null)
           Padding(
-            padding: EdgeInsets.only(top: size.height * 0.005, left: size.width * 0.03),
+            padding: EdgeInsets.only(
+                top: size.height * 0.005, left: size.width * 0.03),
             child: Text(
               errorText,
               style: TextStyle(
@@ -349,30 +365,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<bool> checkEmailExists(String email) async {
-    DatabaseEvent event = await usersRef.once();
-    if (event.snapshot.value != null) {
-      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
-      for (var user in users.values) {
-        if (user['email'] == email) {
-          return true;
-        }
+    try {
+      DatabaseReference emailRef = FirebaseDatabase.instance.ref('users');
+      DatabaseEvent event = await emailRef.orderByChild('email').equalTo(email).once();
+      
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.exists) {
+        // Email sudah ada
+        return true;
       }
+      // Email tidak ada
+      return false;
+    } catch (e) {
+      print("Error checking email: $e");
+      return false;
     }
-    return false;
   }
 
-  Future<bool> checkUsernameExists(String username) async {
-    DatabaseEvent event = await usersRef.once();
-    if (event.snapshot.value != null) {
-      Map<dynamic, dynamic> users = event.snapshot.value as Map<dynamic, dynamic>;
-      for (var user in users.values) {
-        if (user['username'] == username) {
-          return true; // Username sudah ada
-        }
-      }
+
+  // Fungsi untuk menyimpan userId ke SharedPreferences
+    Future<void> _saveUserIdToSharedPreferences(String userId) async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', userId);
+      print('userId saved: $userId');  // Pastikan userId tersimpan
     }
-    return false; // Username tidak ada
+
+  Future<bool> checkUsernameExists(String username) async {
+    try {
+      DatabaseReference usernameRef = FirebaseDatabase.instance.ref('users');
+      DatabaseEvent event = await usernameRef.orderByChild('username').equalTo(username).once();
+      
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.exists) {
+        // Username sudah ada
+        return true;
+      }
+      // Username tidak ada
+      return false;
+    } catch (e) {
+      print("Error checking username: $e");
+      return false;
+    }
   }
+
 
   String hashPassword(String password) {
     var bytes = utf8.encode(password);
@@ -391,7 +426,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             passwordError = _validatePassword(passwordController.text);
           });
 
-          if (emailError == null && usernameError == null && passwordError == null) {
+          if (emailError == null &&
+              usernameError == null &&
+              passwordError == null) {
             bool emailExists = await checkEmailExists(emailController.text);
             if (emailExists) {
               setState(() {
@@ -400,7 +437,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               return; // Keluar dari fungsi jika email sudah ada
             }
 
-            bool usernameExists = await checkUsernameExists(usernameController.text);
+            bool usernameExists =
+                await checkUsernameExists(usernameController.text);
             if (usernameExists) {
               setState(() {
                 usernameError = 'Username yang Anda masukkan sudah terdaftar.';

@@ -52,7 +52,8 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       }
     }
 
-    if (username != null) {
+    // Setelah mendapatkan username, upload gambar ke Firebase
+    if (username != null && widget.imagePath.isNotEmpty) {
       await _uploadImageToFirebase();
       await _getImageUrlFromFirebase();
     }
@@ -61,18 +62,32 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
   // Upload gambar ke Firebase
   Future<void> _uploadImageToFirebase() async {
     try {
-      final storageRef = FirebaseStorage.instance.ref().child('import/$username/$imageName');
+      // Memastikan username dan imagePath valid
+      if (username == null || widget.imagePath.isEmpty) {
+        print('Username atau path gambar tidak valid.');
+        return;
+      }
+
+      final storageRef = FirebaseStorage.instance.ref().child('history/$username/$imageName');
       await storageRef.putFile(File(widget.imagePath));
+
       print("Gambar berhasil di-upload.");
     } catch (e) {
       print("Error uploading image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal meng-upload gambar.')),
+      );
     }
   }
 
   // Mendapatkan URL gambar dari Firebase
   Future<void> _getImageUrlFromFirebase() async {
     try {
-      final storageRef = FirebaseStorage.instance.ref().child('import/$username/$imageName');
+      if (username == null) {
+        throw Exception('Username tidak ditemukan.');
+      }
+      
+      final storageRef = FirebaseStorage.instance.ref().child('history/$username/$imageName');
       String url = await storageRef.getDownloadURL();
       setState(() {
         downloadUrl = url;
@@ -100,7 +115,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
   Future<void> _downloadImageToLocal() async {
     if (downloadUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('URL gambar belum tersedia. Coba lagi nanti.')),
+        SnackBar(content: Text('URL gambar belum tersedia. Coba lagi nanti.')) 
       );
       return;
     }
@@ -118,6 +133,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       Directory? directory = await getExternalStorageDirectory();
       String newPath = "";
       List<String> paths = directory!.path.split("/");
+
       for (int i = 1; i < paths.length; i++) {
         String folder = paths[i];
         if (folder != "Android") {

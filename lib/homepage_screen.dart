@@ -3,8 +3,133 @@ import 'package:exprimo/face_quest/face_quest_screen.dart';
 import 'package:exprimo/import_foto/import_foto_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:exprimo/live_scan/live_scan_screen.dart';
+import 'package:exprimo/file_uji_coba/firebase_api.dart';
+import 'package:exprimo/file_uji_coba/firebase_model.dart';
+import 'package:exprimo/file_uji_coba/image_page.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:exprimo/constants.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
-class Homepage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Future<List<FirebaseFile>> futureFiles;
+  String? username;
+  String? userId;
+  List<FirebaseFile> _allFiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    futureFiles = _loadUserData(); // Initialize with a Future
+  }
+
+  // Memuat data pengguna dan mengatur folder untuk mengambil file
+  Future<List<FirebaseFile>> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId'); // Ambil userId dari SharedPreferences
+
+    if (userId != null) {
+      // Ambil data pengguna dari Firebase Realtime Database menggunakan userId
+      DatabaseEvent event =
+          await FirebaseDatabase.instance.ref('users/$userId').once();
+      if (event.snapshot.value != null) {
+        Map userData = event.snapshot.value as Map;
+        setState(() {
+          username = userData['username'];
+          // Simpan username di SharedPreferences
+          prefs.setString('username', username!);
+        });
+      }
+    }
+
+    // Jika username ditemukan, lanjutkan mengambil file berdasarkan username
+    if (username != null) {
+      List<FirebaseFile> files = await FirebaseApi.listAll(
+          'history/$username/'); // Ambil file sesuai dengan username
+      setState(() {
+        _allFiles = files; // Initialize _filteredFiles to be the same as all files
+      });
+      return files;
+    } else {
+      throw Exception('User not logged in');
+    }
+  }
+
+  Future<String> getUploadTime(String fileUrl) async {
+    try {
+      final storageRef =
+          firebase_storage.FirebaseStorage.instance.refFromURL(fileUrl);
+      final metadata =
+          await storageRef.getMetadata(); // Mengambil metadata file
+      final DateTime uploadTime = metadata.timeCreated!; // Waktu upload
+
+      // Format tanggal sesuai keinginan (misalnya: yyyy-MM-dd HH:mm)
+      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm');
+      return formatter.format(uploadTime);
+    } catch (e) {
+      return 'Unknown time'; // Menangani error jika metadata tidak ditemukan
+    }
+  }
+
+  // Fungsi untuk menghapus file dari Firebase Storage dan UI
+  Future<void> _deleteFile(FirebaseFile file) async {
+    try {
+      // 1. Menghapus file dari Firebase Storage
+      final storageRef = FirebaseStorage.instance.refFromURL(file.url);
+      await storageRef.delete(); // Menghapus file dari Storage
+
+      // 2. Menghapus file dari daftar tampilan (UI)
+      setState(() {
+        _allFiles.remove(file); // Hapus file dari daftar semua file
+      });
+
+      // Tampilkan pesan sukses
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('File deleted successfully'),
+      ));
+    } catch (e) {
+      // Menangani error jika penghapusan gagal
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to delete file: $e'),
+      ));
+    }
+  }
+
+  // Menampilkan dialog konfirmasi sebelum menghapus file
+  Future<void> _showDeleteConfirmationDialog(FirebaseFile file) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Konfirmasi'),
+          content: Text('Apakah anda yakin untuk menghapus file ini?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+              child: Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+                _deleteFile(file);  // Menghapus file setelah konfirmasi
+              },
+              child: Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,120 +341,52 @@ class Homepage extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   // Riwayat Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        'Riwayat',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Align(
+                    alignment: Alignment.centerLeft, // Menyelaraskan tulisan ke kiri
+                    child: Text(
+                      'Riwayat',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
+                    ),
                   ),
-                  // Daftar riwayat
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: 5, // Contoh jumlah data
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            // Gambar
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                width: 64,
-                                height: 64,
-                                child: Image.asset(
-                                  'assets/images/image_happy.jpeg', // Contoh gambar
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            // Deskripsi teks
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'PrimoScanner...-2024 11.04',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow:
-                                        TextOverflow.ellipsis, // Fixed overflow
-                                  ),
-                                  Text(
-                                    '2024-09-16 10:54',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  // Tombol share dan view
-                                  Row(
-                                    children: <Widget>[
-                                      ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: secondaryColor,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          minimumSize: Size(
-                                              50, 30), // Set ukuran minimum
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 8), // Adjust padding
-                                        ),
-                                        child: Text(
-                                          'Share',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: secondaryColor,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          minimumSize: Size(
-                                              50, 30), // Set ukuran minimum
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 8), // Adjust padding
-                                        ),
-                                        child: Text(
-                                          'View',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Tombol delete
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.delete_outline),
-                              color: Colors.grey[600],
-                            ),
-                          ],
+
+                  SizedBox(height: 16),
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          blurRadius: 8,
                         ),
-                      );
-                    },
+                      ],
+                    ),
+                    child: FutureBuilder<List<FirebaseFile>>(
+                      future: futureFiles,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Text('Tidak ada file untuk ditampilkan');
+                        }
+
+                        // Menampilkan daftar file
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _allFiles.length,
+                          itemBuilder: (context, index) {
+                            final file = _allFiles[index];
+                            return buildFileItem(file);
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -339,7 +396,41 @@ class Homepage extends StatelessWidget {
       ),
     );
   }
+
+  Widget buildFileItem(FirebaseFile file) {
+    return ListTile(
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(10),  // Atur nilai sesuai kebutuhan untuk pembulatan sudut
+        child: Image.network(
+          file.url,
+          width: 70,
+          height: 80,
+          fit: BoxFit.cover,
+        ),
+      ),
+      title: Text(file.name),
+
+
+      subtitle: FutureBuilder<String>(
+        future: getUploadTime(file.url),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Text('Loading...');
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            return Text('${snapshot.data}');
+          }
+        },
+      ),
+      // trailing: IconButton(
+      //   icon: Icon(Icons.delete),
+      //   onPressed: () => _showDeleteConfirmationDialog(file),
+      // ),
+    );
+  }
 }
+ 
 
 // Custom widget untuk Icon dan Label
 class IconWithLabel extends StatelessWidget {
