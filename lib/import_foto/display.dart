@@ -7,8 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http; // Tambahkan untuk HTTP request
-import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class DisplayImagePage extends StatefulWidget {
   final String imagePath;
@@ -24,9 +23,9 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
   String? userId;
   DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
   late String imageName;
-  late String downloadUrl = ""; // URL gambar dari Firebase
-  bool isLoading = true; // Status loading
-  File? processedImage; // Gambar hasil dari API
+  late String downloadUrl = "";
+  bool isLoading = true;
+  File? processedImage;
 
   @override
   void initState() {
@@ -55,11 +54,10 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       }
     }
 
-    // Setelah mendapatkan username, upload gambar ke Firebase dan mulai deteksi ekspresi
+    // Upload gambar asli dan mulai deteksi ekspresi
     if (username != null && widget.imagePath.isNotEmpty) {
       await _uploadImageToFirebase();
-      await _getImageUrlFromFirebase();
-      await _detectExpression(); // Tambahkan ini untuk deteksi ekspresi
+      await _detectExpression(); // Memanggil fungsi deteksi ekspresi
     }
   }
 
@@ -74,7 +72,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
           FirebaseStorage.instance.ref().child('history/$username/$imageName');
       await storageRef.putFile(File(widget.imagePath));
 
-      print("Gambar berhasil di-upload.");
+      print("Gambar asli berhasil di-upload.");
     } catch (e) {
       print("Error uploading image: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,24 +81,23 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
     }
   }
 
-  Future<void> _getImageUrlFromFirebase() async {
+  Future<void> _uploadProcessedImageToFirebase() async {
     try {
-      if (username == null) {
-        throw Exception('Username tidak ditemukan.');
+      if (username == null || processedImage == null) {
+        print('Username atau processedImage tidak valid.');
+        return;
       }
 
       final storageRef =
           FirebaseStorage.instance.ref().child('history/$username/$imageName');
-      String url = await storageRef.getDownloadURL();
-      setState(() {
-        downloadUrl = url;
-        isLoading = false;
-      });
+      await storageRef.putFile(processedImage!);
+
+      print("Gambar hasil bounding box berhasil di-upload.");
     } catch (e) {
-      print("Error fetching image URL: $e");
-      setState(() {
-        isLoading = false;
-      });
+      print("Error uploading processed image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal meng-upload gambar hasil bounding box.')),
+      );
     }
   }
 
@@ -113,7 +110,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            'http://192.168.1.13:8000/detect-expression/'), // Sesuaikan dengan URL API
+            'http://192.168.1.13:8000/detect-expression/'), // URL API Anda
       );
       request.files
           .add(await http.MultipartFile.fromPath('file', widget.imagePath));
@@ -130,6 +127,9 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
           processedImage = file;
           isLoading = false;
         });
+
+        // Setelah gambar diproses, upload ke Firebase
+        await _uploadProcessedImageToFirebase();
       } else {
         print("Error from API: ${response.statusCode}");
         setState(() {
