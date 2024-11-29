@@ -20,41 +20,36 @@ class _FilesPageState extends State<FilesPage> {
   String? userId;
   List<FirebaseFile> _filteredFiles = [];
   List<FirebaseFile> _allFiles = [];
-  bool isNewestFirst = true; 
+  bool isNewestFirst = true; // Default: sorting data terbaru
 
   @override
   void initState() {
     super.initState();
-    futureFiles = _loadUserData(); // Initialize with a Future
+    futureFiles = _loadUserData();
   }
 
-  // Memuat data pengguna dan mengatur folder untuk mengambil file
   Future<List<FirebaseFile>> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId = prefs.getString('userId'); // Ambil userId dari SharedPreferences
+    userId = prefs.getString('userId');
 
     if (userId != null) {
-      // Ambil data pengguna dari Firebase Realtime Database menggunakan userId
       DatabaseEvent event =
           await FirebaseDatabase.instance.ref('users/$userId').once();
       if (event.snapshot.value != null) {
         Map userData = event.snapshot.value as Map;
         setState(() {
           username = userData['username'];
-          // Simpan username di SharedPreferences
           prefs.setString('username', username!);
         });
       }
     }
 
-    // Jika username ditemukan, lanjutkan mengambil file berdasarkan username
     if (username != null) {
-      List<FirebaseFile> files = await FirebaseApi.listAll(
-          'history/$username/'); // Ambil file sesuai dengan username
+      List<FirebaseFile> files =
+          await FirebaseApi.listAll('history/$username/');
       setState(() {
         _allFiles = files;
-        _filteredFiles =
-            files; // Initialize _filteredFiles to be the same as all files
+        _filteredFiles = files;
       });
       return files;
     } else {
@@ -66,44 +61,36 @@ class _FilesPageState extends State<FilesPage> {
     try {
       final storageRef =
           firebase_storage.FirebaseStorage.instance.refFromURL(fileUrl);
-      final metadata =
-          await storageRef.getMetadata(); // Mengambil metadata file
-      final DateTime uploadTime = metadata.timeCreated!; // Waktu upload
+      final metadata = await storageRef.getMetadata();
+      final DateTime uploadTime = metadata.timeCreated!;
 
-      // Format tanggal sesuai keinginan (misalnya: yyyy-MM-dd HH:mm)
       final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm');
       return formatter.format(uploadTime);
     } catch (e) {
-      return 'Unknown time'; // Menangani error jika metadata tidak ditemukan
+      return 'Unknown time';
     }
   }
 
-  // Fungsi untuk menghapus file dari Firebase Storage dan UI
   Future<void> _deleteFile(FirebaseFile file) async {
     try {
-      // 1. Menghapus file dari Firebase Storage
       final storageRef = FirebaseStorage.instance.refFromURL(file.url);
-      await storageRef.delete(); // Menghapus file dari Storage
+      await storageRef.delete();
 
-      // 2. Menghapus file dari daftar tampilan (UI)
       setState(() {
-        _filteredFiles.remove(file);  // Hapus file dari daftar yang difilter
-        _allFiles.remove(file);       // Hapus file dari daftar semua file
+        _filteredFiles.remove(file);
+        _allFiles.remove(file);
       });
 
-      // Tampilkan pesan sukses
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('File deleted successfully'),
       ));
     } catch (e) {
-      // Menangani error jika penghapusan gagal
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Failed to delete file: $e'),
       ));
     }
   }
 
-  // Menampilkan dialog konfirmasi sebelum menghapus file
   Future<void> _showDeleteConfirmationDialog(FirebaseFile file) async {
     showDialog(
       context: context,
@@ -114,14 +101,14 @@ class _FilesPageState extends State<FilesPage> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Menutup dialog
+                Navigator.of(context).pop();
               },
               child: Text('Batal'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Menutup dialog
-                _deleteFile(file);  // Menghapus file setelah konfirmasi
+                Navigator.of(context).pop();
+                _deleteFile(file);
               },
               child: Text('Hapus'),
             ),
@@ -131,7 +118,6 @@ class _FilesPageState extends State<FilesPage> {
     );
   }
 
-  // Fungsi untuk memfilter file berdasarkan pencarian
   void _filterFiles(String query) {
     final filtered = _allFiles.where((file) {
       return file.name.toLowerCase().contains(query.toLowerCase());
@@ -142,19 +128,42 @@ class _FilesPageState extends State<FilesPage> {
     });
   }
 
+  Future<void> _sortFiles() async {
+    // Mendapatkan metadata untuk semua file
+    List<Map<String, dynamic>> filesWithTime =
+        await Future.wait(_filteredFiles.map((file) async {
+      String uploadTimeStr = await getUploadTime(file.url);
+      DateTime uploadTime = DateFormat('yyyy-MM-dd HH:mm').parse(uploadTimeStr);
+      return {'file': file, 'time': uploadTime};
+    }));
+
+    // Sorting berdasarkan waktu upload
+    filesWithTime.sort((a, b) {
+      DateTime timeA = a['time'];
+      DateTime timeB = b['time'];
+      return isNewestFirst ? timeB.compareTo(timeA) : timeA.compareTo(timeB);
+    });
+
+    // Perbarui daftar file
+    setState(() {
+      _filteredFiles =
+          filesWithTime.map((entry) => entry['file'] as FirebaseFile).toList();
+      isNewestFirst = !isNewestFirst; // Toggle mode sorting
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(10),
           child: AppBar(
-            automaticallyImplyLeading: false, // This removes the back button
+            automaticallyImplyLeading: false,
             toolbarHeight: 10,
           ),
         ),
         body: Column(
           children: [
             SizedBox(height: 40),
-            // Search bar
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16),
               width: MediaQuery.of(context).size.width * 0.9,
@@ -174,7 +183,7 @@ class _FilesPageState extends State<FilesPage> {
               ),
               child: TextField(
                 onChanged: (value) {
-                  _filterFiles(value); // Memanggil fungsi pencarian
+                  _filterFiles(value);
                 },
                 decoration: InputDecoration(
                   hintText: "Search files",
@@ -184,7 +193,6 @@ class _FilesPageState extends State<FilesPage> {
               ),
             ),
             SizedBox(height: 16),
-            // Konten yang bisa discroll
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -200,14 +208,11 @@ class _FilesPageState extends State<FilesPage> {
                                 fontSize: 14, color: Colors.grey[600]),
                           ),
                           IconButton(
-                            onPressed: () {
-                              // Sorting functionality can be added here if needed
-                            },
+                            onPressed: _sortFiles, // Tambahkan fungsi sorting
                             icon: Icon(Icons.sort),
                           ),
                         ],
                       ),
-                      // Daftar hasil pencarian widget file
                       _filteredFiles.isEmpty
                           ? Center(child: Text('No files found'))
                           : ListView.builder(
@@ -216,8 +221,7 @@ class _FilesPageState extends State<FilesPage> {
                               itemCount: _filteredFiles.length,
                               itemBuilder: (context, index) {
                                 final file = _filteredFiles[index];
-                                return buildFileItem(
-                                    file); // Update with the new widget style
+                                return buildFileItem(file);
                               },
                             ),
                     ],
@@ -235,7 +239,6 @@ class _FilesPageState extends State<FilesPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // Gambar
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Container(
@@ -248,7 +251,6 @@ class _FilesPageState extends State<FilesPage> {
             ),
           ),
           SizedBox(width: 16),
-          // Deskripsi teks
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,8 +263,7 @@ class _FilesPageState extends State<FilesPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 FutureBuilder<String>(
-                  future: getUploadTime(file
-                      .url), // Memanggil fungsi untuk mendapatkan waktu upload
+                  future: getUploadTime(file.url),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Text(
@@ -284,7 +285,6 @@ class _FilesPageState extends State<FilesPage> {
                     }
                   },
                 ),
-                // Tombol share dan view
                 Row(
                   children: <Widget>[
                     ElevatedButton(
@@ -294,9 +294,8 @@ class _FilesPageState extends State<FilesPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        minimumSize: Size(50, 30), // Set ukuran minimum
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8), // Adjust padding
+                        minimumSize: Size(50, 30),
+                        padding: EdgeInsets.symmetric(horizontal: 8),
                       ),
                       child: Text(
                         'Share',
@@ -306,7 +305,6 @@ class _FilesPageState extends State<FilesPage> {
                     SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
-                        // Navigasi ke halaman ImagePage dan meneruskan file
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -319,9 +317,8 @@ class _FilesPageState extends State<FilesPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        minimumSize: Size(50, 30), // Set ukuran minimum
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8), // Adjust padding
+                        minimumSize: Size(50, 30),
+                        padding: EdgeInsets.symmetric(horizontal: 8),
                       ),
                       child: Text(
                         'View',
@@ -333,7 +330,6 @@ class _FilesPageState extends State<FilesPage> {
               ],
             ),
           ),
-          // Tombol delete
           IconButton(
             onPressed: () {
               _showDeleteConfirmationDialog(file);
