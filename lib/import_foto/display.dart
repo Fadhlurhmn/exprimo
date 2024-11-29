@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:exprimo/constants.dart';
+import 'package:exprimo/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -220,10 +221,17 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
             child: isLoading
                 ? CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed:
-                        processedImage != null ? _downloadImageToLocal : null,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              Navigation_menu(), // Ganti dengan widget HomePage
+                        ),
+                      );
+                    },
                     child: Text(
-                      'Download Gambar',
+                      'Go To Homepage',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 24,
