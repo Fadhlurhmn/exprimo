@@ -55,7 +55,8 @@ class _HomePageState extends State<HomePage> {
       List<FirebaseFile> files = await FirebaseApi.listAll(
           'history/$username/'); // Ambil file sesuai dengan username
       setState(() {
-        _allFiles = files; // Initialize _filteredFiles to be the same as all files
+        _allFiles =
+            files; // Initialize _filteredFiles to be the same as all files
       });
       return files;
     } else {
@@ -121,7 +122,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Menutup dialog
-                _deleteFile(file);  // Menghapus file setelah konfirmasi
+                _deleteFile(file); // Menghapus file setelah konfirmasi
               },
               child: Text('Hapus'),
             ),
@@ -130,6 +131,7 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,7 +152,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(
-                    top: 202.0,
+                    top: 190.0,
                     left: 16.0,
                     right: 16.0,
                   ),
@@ -342,7 +344,8 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 10),
                   // Riwayat Section
                   Align(
-                    alignment: Alignment.centerLeft, // Menyelaraskan tulisan ke kiri
+                    alignment:
+                        Alignment.centerLeft, // Menyelaraskan tulisan ke kiri
                     child: Text(
                       'Riwayat',
                       style: TextStyle(
@@ -368,11 +371,13 @@ class _HomePageState extends State<HomePage> {
                     child: FutureBuilder<List<FirebaseFile>>(
                       future: futureFiles,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return CircularProgressIndicator();
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
                           return Text('Tidak ada file untuk ditampilkan');
                         }
 
@@ -400,7 +405,8 @@ class _HomePageState extends State<HomePage> {
   Widget buildFileItem(FirebaseFile file) {
     return ListTile(
       leading: ClipRRect(
-        borderRadius: BorderRadius.circular(10),  // Atur nilai sesuai kebutuhan untuk pembulatan sudut
+        borderRadius: BorderRadius.circular(
+            10), // Atur nilai sesuai kebutuhan untuk pembulatan sudut
         child: Image.network(
           file.url,
           width: 70,
@@ -409,7 +415,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       title: Text(file.name),
-
 
       subtitle: FutureBuilder<String>(
         future: getUploadTime(file.url),
@@ -430,7 +435,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
- 
 
 // Custom widget untuk Icon dan Label
 class IconWithLabel extends StatelessWidget {

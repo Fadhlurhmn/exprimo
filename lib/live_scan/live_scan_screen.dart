@@ -144,7 +144,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
               children: [
                 Column(
                   children: [
-                    SizedBox(height: 40),
+                    // SizedBox(height: 40),
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 3),
