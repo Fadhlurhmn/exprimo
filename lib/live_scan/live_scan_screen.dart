@@ -62,31 +62,35 @@ class _LiveScanPageState extends State<LiveScanPage> {
 
   Future<File?> _processImage(String imagePath) async {
     try {
+      print('Starting image processing for: $imagePath');
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse(
-            'http://192.168.x.x:8000/detect-expression/'), // Ganti dengan IP API Anda
+        Uri.parse('http://192.168.x.x:8000/detect-expression/'),
       );
       request.files.add(await http.MultipartFile.fromPath('file', imagePath));
+      print('File added to request: ${request.files.first.filename}');
 
       final response = await request.send();
+      print('Response received with status code: ${response.statusCode}');
       if (response.statusCode == 200) {
-        // Simpan hasil gambar yang diproses
         final bytes = await response.stream.toBytes();
         final directory = await getApplicationDocumentsDirectory();
         final processedImagePath =
             '${directory.path}/processed_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final file = File(processedImagePath);
         await file.writeAsBytes(bytes);
+        print('Processed image saved to: $processedImagePath');
         return file;
       } else {
-        print("Error from API: ${response.statusCode}");
+        final responseBody = await response.stream.bytesToString();
+        print('API Error - Status: ${response.statusCode}, Body: $responseBody');
       }
     } catch (e) {
-      print("Error processing image: $e");
+      print('Error during image processing: $e');
     }
     return null;
   }
+
 
   Future<void> _takeAndProcessPicture() async {
     if (_controller == null || !_controller!.value.isInitialized) {
@@ -95,20 +99,18 @@ class _LiveScanPageState extends State<LiveScanPage> {
     }
 
     try {
-      // Ambil gambar
       Directory root = await getTemporaryDirectory();
       String directoryPath = '${root.path}/Guided_Camera';
       await Directory(directoryPath).create(recursive: true);
-      String filePath =
-          '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String filePath = '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       XFile imageFile = await _controller!.takePicture();
       await File(imageFile.path).copy(filePath);
+      print('Image captured at: $filePath');
 
-      // Kirim gambar ke API untuk diproses
       File? processedImage = await _processImage(filePath);
       if (processedImage != null) {
-        // Navigasi ke halaman hasil dengan gambar hasil pemrosesan
+        print('Navigating to DisplayImagePage...');
         Navigator.push(
           context,
           MaterialPageRoute(
