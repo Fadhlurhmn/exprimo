@@ -1,62 +1,66 @@
 import 'dart:io';
-import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:exprimo/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class DisplayImagePage extends StatelessWidget {
   final String imagePath;
 
-  DisplayImagePage({required this.imagePath});
+  const DisplayImagePage({Key? key, required this.imagePath}) : super(key: key);
 
-  Future<void> requestPermission(BuildContext context) async {
-    // Meminta izin untuk penyimpanan
+  Future<void> _requestPermission(BuildContext context) async {
     if (await Permission.storage.request().isGranted) {
       // Izin diberikan
     } else {
-      // Tampilkan pesan bahwa izin tidak diberikan
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Izin penyimpanan tidak diberikan')),
+        const SnackBar(content: Text('Izin penyimpanan tidak diberikan')),
       );
     }
   }
 
-  Future<void> downloadImage(BuildContext context) async {
-    await requestPermission(context);
-    if (!await Permission.storage.isGranted) return; // Cek izin
+  Future<void> _downloadImage(BuildContext context) async {
+    await _requestPermission(context);
+    if (!await Permission.storage.isGranted) return;
 
     try {
-      // Mendapatkan direktori Downloads
       Directory? directory = await getExternalStorageDirectory();
       String downloadsPath = '${directory!.path}/Download';
-      await Directory(downloadsPath).create(recursive: true); // Membuat folder jika belum ada
+      await Directory(downloadsPath).create(recursive: true);
 
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.jpg';
+      String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
       String filePath = '$downloadsPath/$fileName';
 
-      // Menyalin file gambar ke lokasi baru
       await File(imagePath).copy(filePath);
 
-      // Menampilkan notifikasi atau dialog berhasil
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gambar berhasil diunduh: $filePath')),
       );
     } catch (e) {
-      // Menampilkan notifikasi atau dialog gagal
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal mengunduh gambar: $e')),
       );
     }
   }
 
+  Future<String> _getDownloadUrl(String path) async {
+    try {
+      final ref = FirebaseStorage.instance.ref(path);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      print("Error getting download URL: $e");
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Mendapatkan lebar layar
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hasil Scan'),
+        title: const Text('Hasil Gambar'),
         backgroundColor: secondaryColor,
       ),
       body: Center(
@@ -66,28 +70,28 @@ class DisplayImagePage extends StatelessWidget {
             Container(
               width: screenWidth,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20), // Membuat border rounded
+                borderRadius: BorderRadius.circular(20),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18), // Set the rounded corner for the image
+                borderRadius: BorderRadius.circular(18),
                 child: Transform(
                   alignment: Alignment.center,
-                  transform: Matrix4.rotationY(3.14159), // Membalikkan gambar horizontal
+                  transform: Matrix4.rotationY(3.14159),
                   child: Image.file(
-                    File(imagePath), // Display the captured image
-                    fit: BoxFit.cover, // Ensure the image fills the container
+                    File(imagePath),
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Container(
-              width: 300, // Set the desired width for the button
+              width: 300,
               child: ElevatedButton(
                 onPressed: () {
-                  downloadImage(context); // Call the download function
+                  _downloadImage(context);
                 },
-                child: Text(
+                child: const Text(
                   'Download',
                   style: TextStyle(
                     color: Colors.black,
@@ -97,9 +101,44 @@ class DisplayImagePage extends StatelessWidget {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF5DADA),
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: const Color(0xFFF5DADA),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 300,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final username = "test_user"; // Replace with actual username
+                  final path = 'history/$username/${imagePath.split('/').last}';
+                  String downloadUrl = await _getDownloadUrl(path);
+                  if (downloadUrl.isNotEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('URL: $downloadUrl')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Gagal mendapatkan URL')),
+                    );
+                  }
+                },
+                child: const Text(
+                  'Dapatkan URL Download',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF5DADA),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
