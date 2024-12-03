@@ -199,11 +199,11 @@ class ProfileItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ProfileItem({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

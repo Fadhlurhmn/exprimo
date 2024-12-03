@@ -4,6 +4,8 @@ import 'package:exprimo/file_uji_coba/image_page.dart';
 import 'package:flutter/material.dart';
 
 class File extends StatefulWidget {
+  const File({super.key});
+
   @override
   _FileState createState() => _FileState();
 }

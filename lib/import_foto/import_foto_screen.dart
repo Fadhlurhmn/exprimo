@@ -7,6 +7,8 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class ImportFotoScreen extends StatefulWidget {
+  const ImportFotoScreen({super.key});
+
   @override
   _ImportFotoScreenState createState() => _ImportFotoScreenState();
 }
@@ -132,7 +134,7 @@ class _ImportFotoScreenState extends State<ImportFotoScreen> {
 class FullScreenImage extends StatelessWidget {
   final File imageFile;
 
-  FullScreenImage({required this.imageFile});
+  const FullScreenImage({required this.imageFile});
 
   @override
   Widget build(BuildContext context) {

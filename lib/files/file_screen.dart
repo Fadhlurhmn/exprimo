@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FilesPage extends StatefulWidget {
+  const FilesPage({super.key});
+
   @override
   _FilesPageState createState() => _FilesPageState();
 }

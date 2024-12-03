@@ -128,12 +128,12 @@ class MenuButton extends StatelessWidget {
   final bool isLogout;
 
   const MenuButton({
-    Key? key,
+    super.key,
     required this.icon,
     required this.label,
     required this.onTap,
     this.isLogout = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +171,8 @@ class MenuButton extends StatelessWidget {
 }
 
 class BugReportModal extends StatefulWidget {
+  const BugReportModal({super.key});
+
   @override
   _BugReportModalState createState() => _BugReportModalState();
 }

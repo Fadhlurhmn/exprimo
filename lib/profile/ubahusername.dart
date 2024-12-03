@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class EditUsernamePage extends StatefulWidget {
   final String username;
 
-  EditUsernamePage({required this.username});
+  const EditUsernamePage({super.key, required this.username});
 
   @override
   _EditUsernamePageState createState() => _EditUsernamePageState();

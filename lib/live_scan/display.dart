@@ -8,7 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 class DisplayImagePage extends StatelessWidget {
   final String imagePath;
 
-  const DisplayImagePage({Key? key, required this.imagePath}) : super(key: key);
+  const DisplayImagePage({super.key, required this.imagePath});
 
   Future<void> _requestPermission(BuildContext context) async {
     if (await Permission.storage.request().isGranted) {
@@ -91,6 +91,13 @@ class DisplayImagePage extends StatelessWidget {
                 onPressed: () {
                   _downloadImage(context);
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF5DADA),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
                 child: const Text(
                   'Download',
                   style: TextStyle(
@@ -98,13 +105,6 @@ class DisplayImagePage extends StatelessWidget {
                     fontSize: 24,
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w700,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5DADA),
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
@@ -127,6 +127,13 @@ class DisplayImagePage extends StatelessWidget {
                     );
                   }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF5DADA),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
                 child: const Text(
                   'Dapatkan URL Download',
                   style: TextStyle(
@@ -134,13 +141,6 @@ class DisplayImagePage extends StatelessWidget {
                     fontSize: 24,
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w700,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5DADA),
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
