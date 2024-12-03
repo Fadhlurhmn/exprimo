@@ -1,11 +1,13 @@
 import 'dart:io';
-import 'package:camera/camera.dart';
 import 'package:exprimo/constants.dart';
-import 'package:exprimo/live_scan/display.dart';
-import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
+import 'package:exprimo/live_scan/display.dart';
+import 'package:http/http.dart' as http;
 
 class LiveScanPage extends StatefulWidget {
   @override
@@ -40,7 +42,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
 
     _controller = CameraController(
       cameras[cameraIndex],
-      ResolutionPreset.medium,
+      ResolutionPreset.high,
     );
 
     try {
@@ -60,18 +62,35 @@ class _LiveScanPageState extends State<LiveScanPage> {
     super.dispose();
   }
 
+  Future<void> _uploadImageToFirebase(String filePath, String username) async {
+    try {
+      final imageName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('history/$username/$imageName');
+
+      await storageRef.putFile(File(filePath));
+
+      print("Gambar berhasil di-upload ke Firebase Storage.");
+    } catch (e) {
+      print("Gagal meng-upload gambar ke Firebase: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal meng-upload gambar.')),
+      );
+    }
+  }
+
   Future<File?> _processImage(String imagePath) async {
     try {
-      print('Starting image processing for: $imagePath');
+      // Kode yang berhubungan dengan API dikomentari
+      /*
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('http://192.168.x.x:8000/detect-expression/'),
       );
       request.files.add(await http.MultipartFile.fromPath('file', imagePath));
-      print('File added to request: ${request.files.first.filename}');
 
       final response = await request.send();
-      print('Response received with status code: ${response.statusCode}');
       if (response.statusCode == 200) {
         final bytes = await response.stream.toBytes();
         final directory = await getApplicationDocumentsDirectory();
@@ -79,52 +98,74 @@ class _LiveScanPageState extends State<LiveScanPage> {
             '${directory.path}/processed_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final file = File(processedImagePath);
         await file.writeAsBytes(bytes);
-        print('Processed image saved to: $processedImagePath');
         return file;
       } else {
-        final responseBody = await response.stream.bytesToString();
-        print('API Error - Status: ${response.statusCode}, Body: $responseBody');
+        print("Error from API: ${response.statusCode}");
       }
+      */
+
+      // Untuk sementara, gunakan gambar asli sebagai hasil pemrosesan
+      print("Simulating processed image using the original file path.");
+      return File(imagePath);
     } catch (e) {
-      print('Error during image processing: $e');
+      print("Error processing image: $e");
     }
     return null;
   }
 
-
   Future<void> _takeAndProcessPicture() async {
     if (_controller == null || !_controller!.value.isInitialized) {
-      print('Controller not initialized');
+      print('Controller tidak diinisialisasi');
       return;
     }
 
     try {
+      // Ambil gambar
       Directory root = await getTemporaryDirectory();
       String directoryPath = '${root.path}/Guided_Camera';
       await Directory(directoryPath).create(recursive: true);
-      String filePath = '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String filePath =
+          '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       XFile imageFile = await _controller!.takePicture();
       await File(imageFile.path).copy(filePath);
-      print('Image captured at: $filePath');
 
-      File? processedImage = await _processImage(filePath);
-      if (processedImage != null) {
-        print('Navigating to DisplayImagePage...');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                DisplayImagePage(imagePath: processedImage.path),
-          ),
-        );
+      // Ambil username dari SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? username = prefs.getString('username');
+
+      if (username != null) {
+        // Upload gambar ke Firebase
+        await _uploadImageToFirebase(filePath, username);
+
+        // Proses gambar (API sementara dikomentari)
+        File? processedImage = await _processImage(filePath);
+
+        if (processedImage != null) {
+          // Navigasi ke halaman hasil dengan gambar asli
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  DisplayImagePage(imagePath: processedImage.path),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memproses gambar.')),
+          );
+        }
       } else {
+        print('Username tidak ditemukan. Pastikan pengguna telah login.');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memproses gambar.')),
+          SnackBar(content: Text('Terjadi kesalahan: Username tidak ditemukan.')),
         );
       }
     } catch (e) {
-      print('Error taking picture: $e');
+      print('Error mengambil gambar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil gambar.')),
+      );
     }
   }
 
