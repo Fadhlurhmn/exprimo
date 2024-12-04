@@ -1,11 +1,11 @@
+//live_scan_screen.dart
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:exprimo/constants.dart';
-import 'package:exprimo/live_scan/display.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
 import 'dart:math' as math;
+
+import 'display.dart'; // Import halaman display untuk menampilkan gambar
 
 class LiveScanPage extends StatefulWidget {
   @override
@@ -17,6 +17,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
   CameraController? _controller;
   int _selectedCameraIndex = 1;
   bool _isCameraInitialized = false;
+  String? capturedImagePath;
 
   @override
   void initState() {
@@ -54,50 +55,15 @@ class _LiveScanPageState extends State<LiveScanPage> {
     }
   }
 
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  Future<File?> _processImage(String imagePath) async {
-    try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse(
-            'http://192.168.x.x:8000/detect-expression/'), // Ganti dengan IP API Anda
-      );
-      request.files.add(await http.MultipartFile.fromPath('file', imagePath));
-
-      final response = await request.send();
-      if (response.statusCode == 200) {
-        // Simpan hasil gambar yang diproses
-        final bytes = await response.stream.toBytes();
-        final directory = await getApplicationDocumentsDirectory();
-        final processedImagePath =
-            '${directory.path}/processed_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final file = File(processedImagePath);
-        await file.writeAsBytes(bytes);
-        return file;
-      } else {
-        print("Error from API: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error processing image: $e");
-    }
-    return null;
-  }
-
-  Future<void> _takeAndProcessPicture() async {
+  Future<void> _takePicture() async {
     if (_controller == null || !_controller!.value.isInitialized) {
       print('Controller not initialized');
       return;
     }
 
     try {
-      // Ambil gambar
       Directory root = await getTemporaryDirectory();
-      String directoryPath = '${root.path}/Guided_Camera';
+      String directoryPath = '${root.path}/CapturedImages';
       await Directory(directoryPath).create(recursive: true);
       String filePath =
           '$directoryPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -105,22 +71,17 @@ class _LiveScanPageState extends State<LiveScanPage> {
       XFile imageFile = await _controller!.takePicture();
       await File(imageFile.path).copy(filePath);
 
-      // Kirim gambar ke API untuk diproses
-      File? processedImage = await _processImage(filePath);
-      if (processedImage != null) {
-        // Navigasi ke halaman hasil dengan gambar hasil pemrosesan
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                DisplayImagePage(imagePath: processedImage.path),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memproses gambar.')),
-        );
-      }
+      setState(() {
+        capturedImagePath = filePath;
+      });
+
+      // Navigasi ke halaman display untuk menampilkan gambar yang diambil
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DisplayPage(imagePath: capturedImagePath!),
+        ),
+      );
     } catch (e) {
       print('Error taking picture: $e');
     }
@@ -131,8 +92,10 @@ class _LiveScanPageState extends State<LiveScanPage> {
     _setCamera(_selectedCameraIndex);
   }
 
-  void _goBack() {
-    Navigator.pop(context); // Navigasi kembali ke halaman sebelumnya
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
@@ -144,7 +107,6 @@ class _LiveScanPageState extends State<LiveScanPage> {
               children: [
                 Column(
                   children: [
-                    // SizedBox(height: 40),
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 3),
@@ -164,59 +126,25 @@ class _LiveScanPageState extends State<LiveScanPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 30), // Spacing for the camera buttons
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        // Tombol Kembali
                         IconButton(
                           icon: Icon(
-                            Icons.arrow_back,
+                            Icons.camera,
                             size: 50,
-                            color: secondaryColor,
+                            color: Colors.black,
                           ),
-                          onPressed: _goBack,
+                          onPressed: _takePicture,
                         ),
-                        // Tombol Ambil Gambar
-                        Container(
-                          width: 120,
-                          height: 120,
-                          margin: EdgeInsets.only(top: 20),
-                          decoration: BoxDecoration(
-                            color: Color(0xFFF5DADA),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.black, width: 1),
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 90,
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.black, width: 1),
-                              ),
-                              child: ElevatedButton(
-                                onPressed: _takeAndProcessPicture,
-                                style: ElevatedButton.styleFrom(
-                                  shape: CircleBorder(),
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                ),
-                                child: null,
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Tombol Ganti Kamera
                         IconButton(
                           icon: Icon(
                             _selectedCameraIndex == 0
                                 ? Icons.camera_front
                                 : Icons.camera_rear,
                             size: 50,
-                            color: secondaryColor,
+                            color: Colors.black,
                           ),
                           onPressed: _toggleCamera,
                         ),

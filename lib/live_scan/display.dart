@@ -1,114 +1,138 @@
 import 'dart:io';
-import 'package:exprimo/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-class DisplayImagePage extends StatelessWidget {
+class DisplayPage extends StatefulWidget {
   final String imagePath;
 
-  DisplayImagePage({required this.imagePath});
+  const DisplayPage({Key? key, required this.imagePath}) : super(key: key);
 
-  Future<void> requestPermission(BuildContext context) async {
-    // Meminta izin untuk penyimpanan
-    if (await Permission.storage.request().isGranted) {
-      // Izin diberikan
-    } else {
-      // Tampilkan pesan bahwa izin tidak diberikan
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Izin penyimpanan tidak diberikan')),
-      );
+  @override
+  _DisplayPageState createState() => _DisplayPageState();
+}
+
+class _DisplayPageState extends State<DisplayPage> {
+  String? userId;
+  String? username;
+  String? imageName;
+  File? scannedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId');
+    if (userId != null) {
+      try {
+        final usersRef = FirebaseDatabase.instance.ref('users');
+        DatabaseEvent event = await usersRef.child(userId!).once();
+        if (event.snapshot.value != null) {
+          Map userData = event.snapshot.value as Map;
+          setState(() {
+            username = userData['username'] ?? 'user-example';
+            String date = DateTime.now().toIso8601String().split("T")[0];
+            String time = DateTime.now()
+                .toIso8601String()
+                .split("T")[1]
+                .split(".")[0]
+                .replaceAll(":", "-");
+            imageName = '$username' + '_' + '$date' + '_' + '$time' + '.jpg';
+          });
+        }
+      } catch (e) {
+        print("Error loading user data: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data pengguna.')),
+        );
+      }
     }
   }
 
-  Future<void> downloadImage(BuildContext context) async {
-    await requestPermission(context);
-    if (!await Permission.storage.isGranted) return; // Cek izin
-
+  Future<void> _uploadImageToFirebase() async {
+    if (username == null || imageName == null) return;
     try {
-      // Mendapatkan direktori Downloads
-      Directory? directory = await getExternalStorageDirectory();
-      String downloadsPath = '${directory!.path}/Download';
-      await Directory(downloadsPath).create(recursive: true); // Membuat folder jika belum ada
-
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.jpg';
-      String filePath = '$downloadsPath/$fileName';
-
-      // Menyalin file gambar ke lokasi baru
-      await File(imagePath).copy(filePath);
-
-      // Menampilkan notifikasi atau dialog berhasil
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('history/$username')
+          .child(imageName!);
+      await storageRef.putFile(File(widget.imagePath));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gambar berhasil diunduh: $filePath')),
+        SnackBar(
+            content: Text('Gambar berhasil diunggah ke Firebase Storage.')),
       );
     } catch (e) {
-      // Menampilkan notifikasi atau dialog gagal
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengunduh gambar: $e')),
+      print("Error uploading image: $e");
+    }
+  }
+
+  Future<void> _scanImage() async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://192.168.73.135:8005/detect-expression/'),
       );
+      request.files
+          .add(await http.MultipartFile.fromPath('file', widget.imagePath));
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final bytes = await response.stream.toBytes();
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/scanned_image.jpg');
+        await file.writeAsBytes(bytes);
+        setState(() {
+          scannedImage = file;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Scan berhasil. Gambar ditampilkan.')),
+        );
+      }
+    } catch (e) {
+      print("Error scanning image: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Mendapatkan lebar layar
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Hasil Scan'),
-        backgroundColor: secondaryColor,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: screenWidth,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20), // Membuat border rounded
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18), // Set the rounded corner for the image
-                child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(3.14159), // Membalikkan gambar horizontal
-                  child: Image.file(
-                    File(imagePath), // Display the captured image
-                    fit: BoxFit.cover, // Ensure the image fills the container
+      appBar: AppBar(title: Text('Tinjau Gambar')),
+      body: username == null || imageName == null
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: scannedImage != null
+                        ? Image.file(scannedImage!)
+                        : Image.file(File(widget.imagePath)),
                   ),
                 ),
-              ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _uploadImageToFirebase,
+                      child: Text('Simpan Gambar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _scanImage,
+                      child: Text('Scan Gambar'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+              ],
             ),
-            SizedBox(height: 20),
-            Container(
-              width: 300, // Set the desired width for the button
-              child: ElevatedButton(
-                onPressed: () {
-                  downloadImage(context); // Call the download function
-                },
-                child: Text(
-                  'Download',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 24,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF5DADA),
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

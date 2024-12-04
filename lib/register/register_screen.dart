@@ -4,8 +4,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:exprimo/login/background.dart';
 import 'package:exprimo/constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool isRegisterPressed;
@@ -220,28 +220,69 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             String hashedPassword = hashPassword(password);
 
                             try {
-                              // Menambahkan data pengguna ke Firebase Realtime Database
-                              var newUserRef = usersRef.push();  // Mendapatkan referensi untuk pengguna baru
-                              String userId = newUserRef.key!;    // Mendapatkan userId (key dari pengguna baru)
+                              final List<Map<String, dynamic>>
+                                  defaultExpressionItems = [
+                                {
+                                  "name": "Happy",
+                                  "difficulty": "Mudah",
+                                  "isComplete": false
+                                },
+                                {
+                                  "name": "Angry",
+                                  "difficulty": "Mudah",
+                                  "isComplete": false
+                                },
+                                {
+                                  "name": "Fear",
+                                  "difficulty": "Mudah",
+                                  "isComplete": false
+                                },
+                                {
+                                  "name": "Sad",
+                                  "difficulty": "Menengah",
+                                  "isComplete": false
+                                },
+                                {
+                                  "name": "Neutral",
+                                  "difficulty": "Menengah",
+                                  "isComplete": false
+                                },
+                              ];
 
+                              // Membuat node pengguna baru di database
+                              final newUserRef = usersRef
+                                  .push(); // Membuat referensi pengguna baru
+
+                              // Menyimpan data pengguna baru
                               await newUserRef.set({
                                 'email': email,
                                 'username': username,
                                 'password': hashedPassword,
                               });
 
-                              // Menyimpan userId ke SharedPreferences
-                              await _saveUserIdToSharedPreferences(userId);
+                              // Menambahkan data default expressionItems ke dalam node pengguna
+                              final expressionItems = defaultExpressionItems
+                                  .asMap()
+                                  .map((key, value) {
+                                return MapEntry('game$key', value);
+                              });
+                              await newUserRef
+                                  .child('expressionItems')
+                                  .set(expressionItems);
 
+                              // Menampilkan pesan sukses
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Registrasi berhasil!')),
                               );
+
+                              // Pindah ke layar Login
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => LoginScreen()),
                               );
                             } catch (e) {
+                              // Menampilkan pesan kesalahan
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                     content: Text('Terjadi kesalahan: $e')),
@@ -365,49 +406,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<bool> checkEmailExists(String email) async {
-    try {
-      DatabaseReference emailRef = FirebaseDatabase.instance.ref('users');
-      DatabaseEvent event = await emailRef.orderByChild('email').equalTo(email).once();
-      
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.exists) {
-        // Email sudah ada
-        return true;
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['email'] == email) {
+          return true;
+        }
       }
-      // Email tidak ada
-      return false;
-    } catch (e) {
-      print("Error checking email: $e");
-      return false;
     }
+    return false;
   }
-
-
-  // Fungsi untuk menyimpan userId ke SharedPreferences
-    Future<void> _saveUserIdToSharedPreferences(String userId) async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', userId);
-      print('userId saved: $userId');  // Pastikan userId tersimpan
-    }
 
   Future<bool> checkUsernameExists(String username) async {
-    try {
-      DatabaseReference usernameRef = FirebaseDatabase.instance.ref('users');
-      DatabaseEvent event = await usernameRef.orderByChild('username').equalTo(username).once();
-      
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.exists) {
-        // Username sudah ada
-        return true;
+    DatabaseEvent event = await usersRef.once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> users =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      for (var user in users.values) {
+        if (user['username'] == username) {
+          return true; // Username sudah ada
+        }
       }
-      // Username tidak ada
-      return false;
-    } catch (e) {
-      print("Error checking username: $e");
-      return false;
     }
+    return false; // Username tidak ada
   }
-
 
   String hashPassword(String password) {
     var bytes = utf8.encode(password);

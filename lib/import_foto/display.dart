@@ -111,7 +111,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            'http://192.168.1.13:8000/detect-expression/'), // URL API Anda
+            'http://192.168.73.135:8005/detect-expression/'), // URL API Anda
       );
       request.files
           .add(await http.MultipartFile.fromPath('file', widget.imagePath));
