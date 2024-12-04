@@ -99,6 +99,16 @@ class _DisplayPageState extends State<DisplayPage> {
     }
   }
 
+  Future<String> _getDownloadUrl(String path) async {
+    try {
+      final ref = FirebaseStorage.instance.ref(path);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      print("Error getting download URL: $e");
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

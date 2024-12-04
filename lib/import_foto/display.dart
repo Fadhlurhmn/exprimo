@@ -230,6 +230,14 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
                         ),
                       );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFF5DADA),
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                     child: Text(
                       'Go To Homepage',
                       style: TextStyle(
@@ -237,14 +245,6 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
                         fontSize: 24,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFF5DADA),
-                      foregroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   ),

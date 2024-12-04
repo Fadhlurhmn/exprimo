@@ -99,15 +99,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         );
                       },
-                      child: Text(
-                        'Login',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: size.width * 0.05,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         padding:
@@ -116,6 +107,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(10),
                           ),
+                        ),
+                      ),
+                      child: Text(
+                        'Login',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: size.width * 0.05,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
@@ -130,15 +130,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         );
                       },
-                      child: Text(
-                        'Register',
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: size.width * 0.05,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: secondaryColor,
                         padding:
@@ -147,6 +138,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                           ),
+                        ),
+                      ),
+                      child: Text(
+                        'Register',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: size.width * 0.05,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
@@ -290,15 +290,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             }
                           }
                         },
-                        child: Text(
-                          'Register',
-                          style: TextStyle(
-                            color: secondaryColor,
-                            fontSize: size.width * 0.05,
-                            fontFamily: 'Nunito',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: EdgeInsets.symmetric(
@@ -309,6 +300,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           minimumSize:
                               Size(size.width * 0.8, size.height * 0.07),
+                        ),
+                        child: Text(
+                          'Register',
+                          style: TextStyle(
+                            color: secondaryColor,
+                            fontSize: size.width * 0.05,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
                     ],
@@ -489,6 +489,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             });
           }
         },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          padding: EdgeInsets.symmetric(vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
         child: Text(
           'Register',
           style: TextStyle(
@@ -496,13 +503,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             fontSize: 20,
             fontFamily: 'Nunito',
             fontWeight: FontWeight.w400,
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          padding: EdgeInsets.symmetric(vertical: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
           ),
         ),
       ),

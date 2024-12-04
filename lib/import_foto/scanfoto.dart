@@ -62,7 +62,7 @@ class ScanningScreen extends StatelessWidget {
 class ResultScreen extends StatelessWidget {
   final File imageFile;
 
-  const ResultScreen({required this.imageFile});
+  const ResultScreen({super.key, required this.imageFile});
 
   void _downloadImage(BuildContext context) {
     // Code for downloading the image can be added here

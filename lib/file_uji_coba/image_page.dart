@@ -6,9 +6,9 @@ class ImagePage extends StatelessWidget {
   final FirebaseFile file;
 
   const ImagePage({
-    Key? key,
+    super.key,
     required this.file,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +57,14 @@ class ImagePage extends StatelessWidget {
                 );
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFF5DADA), // Warna latar belakang tombol
+                foregroundColor: Colors.black, // Warna teks tombol
+                padding: EdgeInsets.symmetric(vertical: 20), // Padding vertikal tombol
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // Membuat tombol dengan sudut rounded
+                ),
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -71,14 +79,6 @@ class ImagePage extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF5DADA), // Warna latar belakang tombol
-                foregroundColor: Colors.black, // Warna teks tombol
-                padding: EdgeInsets.symmetric(vertical: 20), // Padding vertikal tombol
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // Membuat tombol dengan sudut rounded
-                ),
               ),
             ),
           ),

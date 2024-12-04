@@ -6,7 +6,7 @@ import 'package:exprimo/register/register_screen.dart';
 class Background extends StatefulWidget {
   final bool isLoginActive;
 
-  const Background({Key? key, this.isLoginActive = true}) : super(key: key);
+  const Background({super.key, this.isLoginActive = true});
 
   @override
   _BackgroundState createState() => _BackgroundState();
@@ -74,15 +74,6 @@ class _BackgroundState extends State<Background> {
                       ),
                     );
                   },
-                  child: Text(
-                    'Login',
-                    style: TextStyle(
-                      color: widget.isLoginActive ? Colors.white : Colors.black,
-                      fontSize: size.width * 0.05,
-                      fontFamily: 'Nunito',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.isLoginActive ? secondaryColor : Colors.white,
                     padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
@@ -93,6 +84,15 @@ class _BackgroundState extends State<Background> {
                         topRight: Radius.circular(10),
                         bottomRight: Radius.circular(0),
                       ),
+                    ),
+                  ),
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: widget.isLoginActive ? Colors.white : Colors.black,
+                      fontSize: size.width * 0.05,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
@@ -108,15 +108,6 @@ class _BackgroundState extends State<Background> {
                       ),
                     );
                   },
-                  child: Text(
-                    'Register',
-                    style: TextStyle(
-                      color: widget.isLoginActive ? Colors.black : Colors.white,
-                      fontSize: size.width * 0.05,
-                      fontFamily: 'Nunito',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.isLoginActive ? Colors.white : secondaryColor,
                     padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
@@ -127,6 +118,15 @@ class _BackgroundState extends State<Background> {
                         topRight: Radius.circular(0),
                         bottomRight: Radius.circular(0),
                       ),
+                    ),
+                  ),
+                  child: Text(
+                    'Register',
+                    style: TextStyle(
+                      color: widget.isLoginActive ? Colors.black : Colors.white,
+                      fontSize: size.width * 0.05,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),

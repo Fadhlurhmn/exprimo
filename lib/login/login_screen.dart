@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   bool loginError = false;
+  bool _obscurePassword = true; // Mengatur visibilitas password
 
   @override
   void initState() {
@@ -259,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: size.width * 0.8,
                         child: TextFormField(
                           controller: passwordController,
-                          obscureText: true,
+                          obscureText: _obscurePassword, // Gunakan variabel ini
                           decoration: InputDecoration(
                             hintText: 'Masukkan password',
                             border: OutlineInputBorder(
@@ -273,6 +274,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 "assets/icons/Lock.png",
                                 width: size.width * 0.06,
                               ),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword; // Toggle visibility
+                                });
+                              },
                             ),
                           ),
                           validator: (value) {

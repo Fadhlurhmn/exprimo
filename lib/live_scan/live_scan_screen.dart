@@ -41,7 +41,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
 
     _controller = CameraController(
       cameras[cameraIndex],
-      ResolutionPreset.medium,
+      ResolutionPreset.high,
     );
 
     try {
@@ -57,7 +57,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
 
   Future<void> _takePicture() async {
     if (_controller == null || !_controller!.value.isInitialized) {
-      print('Controller not initialized');
+      print('Controller tidak diinisialisasi');
       return;
     }
 
@@ -83,7 +83,10 @@ class _LiveScanPageState extends State<LiveScanPage> {
         ),
       );
     } catch (e) {
-      print('Error taking picture: $e');
+      print('Error mengambil gambar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil gambar.')),
+      );
     }
   }
 

@@ -5,6 +5,8 @@ import 'package:exprimo/constants.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
+
   @override
   _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
 }
