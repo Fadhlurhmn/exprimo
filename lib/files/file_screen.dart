@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:exprimo/file_uji_coba/firebase_api.dart';
 import 'package:exprimo/file_uji_coba/firebase_model.dart';
 import 'package:exprimo/file_uji_coba/image_page.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:exprimo/constants.dart';
 import 'package:intl/intl.dart';
@@ -290,7 +295,28 @@ class _FilesPageState extends State<FilesPage> {
                 Row(
                   children: <Widget>[
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        try {
+                          // Unduh file dari Firebase Storage
+                          final tempDir = await getTemporaryDirectory();
+                          final filePath = '${tempDir.path}/${file.name}'; // Simpan sementara
+                          final ref = FirebaseStorage.instance.refFromURL(file.url);
+                          final fileLocal = File(filePath);
+
+                          // Unduh data ke file lokal
+                          await ref.writeToFile(fileLocal);
+
+                          // Gunakan Share Plus untuk berbagi
+                          await Share.shareXFiles(
+                            [XFile(fileLocal.path)],
+                            text: 'Hasil scan Exprimo Kelompok 4: ${file.name}',
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to share file: $e')),
+                          );
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: secondaryColor,
                         shape: RoundedRectangleBorder(
@@ -304,6 +330,7 @@ class _FilesPageState extends State<FilesPage> {
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
+
                     SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {

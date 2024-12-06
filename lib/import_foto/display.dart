@@ -218,8 +218,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
           SizedBox(height: 10),
           Container(
             width: 300,
-            child: isLoading
-                ? CircularProgressIndicator()
+            child
                 : ElevatedButton(
                     onPressed: () {
                       Navigator.push(
