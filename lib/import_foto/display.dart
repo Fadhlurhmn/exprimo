@@ -1,3 +1,4 @@
+//import_foto/display.dart
 import 'dart:io';
 import 'package:exprimo/constants.dart';
 import 'package:exprimo/navigation.dart';
@@ -111,7 +112,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            'http://192.168.73.135:8005/detect-expression/'), // URL API Anda
+            'https://modelekspresi-production.up.railway.app/detect-expression/'), // URL API Anda
       );
       request.files
           .add(await http.MultipartFile.fromPath('file', widget.imagePath));

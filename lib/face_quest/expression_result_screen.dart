@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:exprimo/face_quest/face_quest_screen.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class ExpressionResultScreen extends StatelessWidget {
@@ -6,6 +8,7 @@ class ExpressionResultScreen extends StatelessWidget {
   final String detectedExpression;
   final String expectedExpression;
   final bool isMatched;
+  final VoidCallback onRetry;
 
   const ExpressionResultScreen({
     Key? key,
@@ -13,7 +16,28 @@ class ExpressionResultScreen extends StatelessWidget {
     required this.detectedExpression,
     required this.expectedExpression,
     required this.isMatched,
+    required this.onRetry,
   }) : super(key: key);
+
+  Future<void> _updateStatusInDatabase() async {
+    String userId = "";
+    try {
+      final databaseReference = FirebaseDatabase.instance.ref();
+
+      // Assuming the path is something like '/expressions/{userId}'
+      String userId = "yourUserId"; // Replace with actual user ID
+      databaseReference
+          .child('expressions')
+          .child(userId)
+          .update({'isComplete': true}).then((_) {
+        print('Status updated successfully!');
+      }).catchError((error) {
+        print('Failed to update status: $error');
+      });
+    } catch (e) {
+      print('Error updating status in database: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +70,8 @@ class ExpressionResultScreen extends StatelessWidget {
           if (!isMatched)
             ElevatedButton(
               onPressed: () {
-                // Navigasi kembali ke layar kamera
-                Navigator.of(context).pop();
+                // Navigasi ulang ke layar kamera dengan callback
+                onRetry();
               },
               child: Text('Try Again'),
               style: ElevatedButton.styleFrom(
@@ -58,10 +82,10 @@ class ExpressionResultScreen extends StatelessWidget {
           if (isMatched)
             ElevatedButton(
               onPressed: () {
-                // Tambahkan logika untuk melanjutkan ke tahap berikutnya
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text('Great job! Proceeding to the next step.')),
+                // Navigating to the FaceQuestPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FaceQuestScreen()),
                 );
               },
               child: Text('Next'),

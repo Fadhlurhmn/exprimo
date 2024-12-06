@@ -383,6 +383,20 @@ class _CameraScreenState extends State<CameraScreen> {
             detectedExpression: detectedExpression,
             expectedExpression: widget.expressionItem.name,
             isMatched: isExpressionMatched,
+            onRetry: () {
+              // Navigasi ulang ke CameraScreen
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => CameraScreen(
+                    expressionItem: ExpressionItem(
+                      widget.expressionItem.name,
+                      widget.expressionItem.difficulty,
+                      false, // Sesuaikan nilai ini jika diperlukan
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       );
@@ -398,9 +412,11 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.62.249:8006/get-expression-label/'),
+        Uri.parse(
+            'https://modelekspresi-production.up.railway.app/get-expression-label/'),
       );
-      request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+      request.files
+          .add(await http.MultipartFile.fromPath('file', imageFile.path));
 
       final response = await request.send();
 
@@ -409,7 +425,8 @@ class _CameraScreenState extends State<CameraScreen> {
         final jsonResponse = jsonDecode(responseBody);
 
         // Periksa respons untuk key 'emotions'
-        if (jsonResponse.containsKey('emotions') && jsonResponse['emotions'] is List) {
+        if (jsonResponse.containsKey('emotions') &&
+            jsonResponse['emotions'] is List) {
           final emotions = jsonResponse['emotions'] as List;
           return emotions.isNotEmpty ? emotions[0] : 'Unknown';
         } else {
@@ -430,7 +447,8 @@ class _CameraScreenState extends State<CameraScreen> {
       return Center(child: CircularProgressIndicator());
     }
 
-    bool isFrontCamera = cameras[_selectedCameraIndex].lensDirection == CameraLensDirection.front;
+    bool isFrontCamera = cameras[_selectedCameraIndex].lensDirection ==
+        CameraLensDirection.front;
 
     return Scaffold(
       appBar: AppBar(title: Text('Camera')),

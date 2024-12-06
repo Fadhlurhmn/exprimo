@@ -1,3 +1,4 @@
+//live_scan/display.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -77,7 +78,8 @@ class _DisplayPageState extends State<DisplayPage> {
     try {
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.73.135:8005/detect-expression/'),
+        Uri.parse(
+            'https://modelekspresi-production.up.railway.app/detect-expression/'),
       );
       request.files
           .add(await http.MultipartFile.fromPath('file', widget.imagePath));
