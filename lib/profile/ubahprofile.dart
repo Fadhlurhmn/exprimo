@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'ubahusername.dart';
 import 'ubahemail.dart';
 
@@ -60,7 +62,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
     if (_imageFile != null && userId != null) {
       try {
         final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
-        
+
         // Upload file ke Firebase Storage
         await storageRef.putFile(_imageFile!);
 
@@ -86,6 +88,94 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
         currentUsername = newUsername;
       });
     }
+  }
+
+  Future<void> _updatePassword(String newPassword) async {
+    if (userId != null) {
+      // Hash password sebelum disimpan
+      String hashedPassword = hashPassword(newPassword);
+      await usersRef.child(userId!).update({'password': hashedPassword});
+      setState(() {
+        currentPassword = '********'; // Display default masked password
+      });
+    }
+  }
+
+  void _changePassword() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String username = '';
+        String email = '';
+        String newPassword = '';
+        final usernameController = TextEditingController();
+        final emailController = TextEditingController();
+        final passwordController = TextEditingController();
+
+        return AlertDialog(
+          title: const Text('Change Password'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(labelText: 'Username'),
+                ),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                ),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'New Password'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                username = usernameController.text.trim();
+                email = emailController.text.trim();
+                newPassword = passwordController.text.trim();
+
+                if (username.isEmpty || email.isEmpty || newPassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('All fields are required!')),
+                  );
+                  return;
+                }
+
+                // Validate username and email with Firebase
+                DatabaseEvent event = await usersRef.child(userId!).once();
+                if (event.snapshot.value != null) {
+                  Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
+                  if (userData['username'] == username && userData['email'] == email) {
+                    await _updatePassword(newPassword);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password updated successfully!')),
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invalid username or email!')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -184,6 +274,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
             ProfileItem(
               label: 'Password',
               value: currentPassword,
+              onTap: _changePassword,
             ),
           ],
         ),
@@ -242,4 +333,11 @@ class ProfileItem extends StatelessWidget {
       ),
     );
   }
+}
+
+// Fungsi hashing password
+String hashPassword(String password) {
+  var bytes = utf8.encode(password);
+  var digest = sha256.convert(bytes);
+  return digest.toString();
 }
