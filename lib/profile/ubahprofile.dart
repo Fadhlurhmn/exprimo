@@ -113,22 +113,43 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
         final passwordController = TextEditingController();
 
         return AlertDialog(
-          title: const Text('Change Password'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Column(
+            children: [
+              Icon(Icons.lock_reset, size: 40, color: Colors.pink),
+              const SizedBox(height: 10),
+              const Text(
+                'Change Password',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               children: [
-                TextField(
+                _buildTextField(
                   controller: usernameController,
-                  decoration: const InputDecoration(labelText: 'Username'),
+                  labelText: 'Username',
+                  hintText: 'Enter your username',
+                  icon: Icons.person,
                 ),
-                TextField(
+                const SizedBox(height: 10),
+                _buildTextField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  labelText: 'Email',
+                  hintText: 'Enter your email',
+                  icon: Icons.email,
                 ),
-                TextField(
+                const SizedBox(height: 10),
+                _buildTextField(
                   controller: passwordController,
+                  labelText: 'New Password',
+                  hintText: 'Enter your new password',
+                  icon: Icons.lock,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: 'New Password'),
                 ),
               ],
             ),
@@ -138,9 +159,18 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pink,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
               onPressed: () async {
                 username = usernameController.text.trim();
                 email = emailController.text.trim();
@@ -153,7 +183,6 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                   return;
                 }
 
-                // Validate username and email with Firebase
                 DatabaseEvent event = await usersRef.child(userId!).once();
                 if (event.snapshot.value != null) {
                   Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
@@ -170,11 +199,43 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
                   }
                 }
               },
-              child: const Text('Submit'),
+              child: const Text(
+                'Submit',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: Colors.pink),
+        filled: true,
+        fillColor: Colors.pink[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Colors.pink),
+        ),
+        labelStyle: const TextStyle(color: Colors.grey),
+      ),
     );
   }
 
