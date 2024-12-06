@@ -35,33 +35,16 @@ class _HomePageState extends State<HomePage> {
   // Memuat data pengguna dan mengatur folder untuk mengambil file
   Future<List<FirebaseFile>> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId = prefs.getString('userId'); // Ambil userId dari SharedPreferences
+    userId = prefs.getString('userId');
 
     if (userId != null) {
-      // Ambil data pengguna dari Firebase Realtime Database menggunakan userId
-      DatabaseEvent event =
-          await FirebaseDatabase.instance.ref('users/$userId').once();
-      if (event.snapshot.value != null) {
-        Map userData = event.snapshot.value as Map;
-        setState(() {
-          username = userData['username'];
-          // Simpan username di SharedPreferences
-          prefs.setString('username', username!);
-        });
-      }
-    }
-
-    // Jika username ditemukan, lanjutkan mengambil file berdasarkan username
-    if (username != null) {
-      List<FirebaseFile> files = await FirebaseApi.listAll(
-          'history/$username/'); // Ambil file sesuai dengan username
+      List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
       setState(() {
-        _allFiles =
-            files; // Initialize _filteredFiles to be the same as all files
+        _allFiles = files;
       });
       return files;
     } else {
-      throw Exception('User not logged in');
+      throw Exception('User not logged in');
     }
   }
 

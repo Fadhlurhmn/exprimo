@@ -36,26 +36,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(left: size.width * 0.05),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Colors.black,
-                      size: size.width * 0.06,
-                    ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => WelcomeScreen()),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.centerLeft,
+              //   child: Padding(
+              //     padding: EdgeInsets.only(left: size.width * 0.05),
+              //     child: IconButton(
+              //       icon: Icon(
+              //         Icons.arrow_back,
+              //         color: Colors.black,
+              //         size: size.width * 0.06,
+              //       ),
+              //       onPressed: () {
+              //         Navigator.pushReplacement(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => WelcomeScreen()),
+              //         );
+              //       },
+              //     ),
+              //   ),
+              // ),
               SizedBox(height: size.height * 0.001),
               Text(
                 'Selamat Datang di Exprimo!',

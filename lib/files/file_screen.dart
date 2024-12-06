@@ -31,32 +31,19 @@ class _FilesPageState extends State<FilesPage> {
     futureFiles = _loadUserData();
   }
 
-  Future<List<FirebaseFile>> _loadUserData() async {
+   Future<List<FirebaseFile>> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
 
     if (userId != null) {
-      DatabaseEvent event =
-          await FirebaseDatabase.instance.ref('users/$userId').once();
-      if (event.snapshot.value != null) {
-        Map userData = event.snapshot.value as Map;
-        setState(() {
-          username = userData['username'];
-          prefs.setString('username', username!);
-        });
-      }
-    }
-
-    if (username != null) {
-      List<FirebaseFile> files =
-          await FirebaseApi.listAll('history/$username/');
+      List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
       setState(() {
         _allFiles = files;
         _filteredFiles = files;
       });
       return files;
     } else {
-      throw Exception('User not logged in');
+      throw Exception('User not logged in');
     }
   }
 

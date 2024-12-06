@@ -310,7 +310,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late List<CameraDescription> cameras;
   CameraController? _controller;
-  int _selectedCameraIndex = 0;
+  int _selectedCameraIndex = 1;
   File? _capturedImage;
 
   @override
@@ -374,6 +374,48 @@ class _CameraScreenState extends State<CameraScreen> {
       // Bandingkan ekspresi yang dideteksi dengan ekspresi yang diharapkan
       bool isExpressionMatched = detectedExpression.toLowerCase() ==
           widget.expressionItem.name.toLowerCase();
+
+      if (isExpressionMatched) {
+        final prefs = await SharedPreferences.getInstance();
+        String userId = prefs.getString('userId') ?? ""; // Ambil userId
+        String gameName = widget.expressionItem.name;
+
+        if (userId.isEmpty) {
+          print('User ID is empty. Cannot update database.');
+          return; // Berhenti jika userId kosong
+        }
+
+        final databaseReference = FirebaseDatabase.instance.ref();
+        try {
+          // Cari node dengan nama game yang sesuai
+          final snapshot = await databaseReference
+              .child('users')
+              .child(userId)
+              .child('expressionItems')
+              .get();
+
+          if (snapshot.exists) {
+            for (final child in snapshot.children) {
+              final data = child.value as Map?;
+              if (data != null && data['name'] == gameName) {
+                // Update node dengan gameName yang sesuai
+                await databaseReference
+                    .child('users')
+                    .child(userId)
+                    .child('expressionItems')
+                    .child(child.key!)
+                    .update({'isComplete': true});
+                print('Updated game "$gameName" to complete.');
+              }
+            }
+          }
+
+          print('Game "$gameName" not found.');
+        } catch (e) {
+          print('Error updating game completion status: $e');
+        }
+      }
+
 
       // Navigasi ke layar hasil
       Navigator.of(context).push(
