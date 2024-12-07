@@ -16,7 +16,7 @@ class Body extends StatelessWidget {
         children: <Widget>[
           Positioned(
             child: Image.asset(
-              "assets/images/smile.png",
+              "assets/images/iconic-2.png",
               width: size.width * 0.6,
               fit: BoxFit.cover,
             ),

@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
-    print("Retrieved userId: $userId");  // Log nilai yang diambil
+    print("Retrieved userId: $userId"); // Log nilai yang diambil
     if (userId != null) {
       Navigator.pushReplacement(
         context,
@@ -45,13 +45,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<bool> login(String username, String password) async {
     try {
       DatabaseReference userRef = FirebaseDatabase.instance.ref('users');
-      DatabaseEvent event = await userRef.orderByChild('username').equalTo(username).once();
+      DatabaseEvent event =
+          await userRef.orderByChild('username').equalTo(username).once();
       DataSnapshot snapshot = event.snapshot;
 
       if (snapshot.exists) {
         print('Username ditemukan: $username');
-        Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
-        String storedPasswordHash = userData.values.first['password'];  // Password yang sudah di-hash
+        Map<dynamic, dynamic> userData =
+            snapshot.value as Map<dynamic, dynamic>;
+        String storedPasswordHash =
+            userData.values.first['password']; // Password yang sudah di-hash
 
         // Hash password yang dimasukkan pengguna
         String hashedPassword = hashPassword(password);
@@ -77,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -87,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Padding( 
+              // Padding(
               //   padding: EdgeInsets.only(top: size.height * 0.01, left: size.width * 0.05),
               //   child: Align(
               //     alignment: Alignment.topLeft,
@@ -102,16 +104,17 @@ class _LoginScreenState extends State<LoginScreen> {
               //     ),
               //   ),
               // ),
-              
+
               // Background section
               Container(
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(top: size.height * 0.001),
+                      padding: EdgeInsets.only(top: size.height * 0.05),
                       child: Container(
                         width: double.infinity,
-                        padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: size.width * 0.05),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -127,8 +130,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             SizedBox(height: size.height * 0.02),
                             Image.asset(
-                              "assets/images/smile.png",
-                              width: size.width * 0.5,
+                              "assets/images/iconic-2.png",
+                              width: size.width * 0.45,
                             ),
                             SizedBox(height: size.height * 0.02),
                             Text(
@@ -169,7 +172,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: secondaryColor,
-                              padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: size.height * 0.02),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(10),
@@ -199,7 +203,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: size.height * 0.02),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(10),
@@ -213,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              
+
               // Form section
               Container(
                 height: size.height * 0.48,
@@ -277,12 +282,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: Colors.grey,
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _obscurePassword = !_obscurePassword; // Toggle visibility
+                                  _obscurePassword =
+                                      !_obscurePassword; // Toggle visibility
                                 });
                               },
                             ),
@@ -349,11 +357,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 setState(() {
                                   loginError = true;
                                 });
-                                _formKey.currentState!.validate();  // Trigger revalidation untuk menampilkan pesan error
+                                _formKey.currentState!
+                                    .validate(); // Trigger revalidation untuk menampilkan pesan error
                               }
                             }
                           },
-
                           child: Text(
                             'Login',
                             style: TextStyle(

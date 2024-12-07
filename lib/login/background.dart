@@ -42,7 +42,7 @@ class _BackgroundState extends State<Background> {
                   ),
                   SizedBox(height: size.height * 0.01), // Reduced space
                   Image.asset(
-                    "assets/images/smile.png",
+                    "assets/images/iconic-2.png",
                     width: size.width * 0.5,
                   ),
                   SizedBox(height: size.height * 0.01), // Reduced space
@@ -75,7 +75,8 @@ class _BackgroundState extends State<Background> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.isLoginActive ? secondaryColor : Colors.white,
+                    backgroundColor:
+                        widget.isLoginActive ? secondaryColor : Colors.white,
                     padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
@@ -109,7 +110,8 @@ class _BackgroundState extends State<Background> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.isLoginActive ? Colors.white : secondaryColor,
+                    backgroundColor:
+                        widget.isLoginActive ? Colors.white : secondaryColor,
                     padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(

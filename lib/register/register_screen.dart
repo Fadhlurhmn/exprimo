@@ -56,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               //     ),
               //   ),
               // ),
-              SizedBox(height: size.height * 0.001),
+              SizedBox(height: size.height * 0.05),
               Text(
                 'Selamat Datang di Exprimo!',
                 textAlign: TextAlign.center,
@@ -69,8 +69,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               SizedBox(height: size.height * 0.02),
               Image.asset(
-                "assets/images/smile.png",
-                width: size.width * 0.5,
+                "assets/images/iconic-2.png",
+                width: size.width * 0.45,
               ),
               SizedBox(height: size.height * 0.02),
               Padding(
