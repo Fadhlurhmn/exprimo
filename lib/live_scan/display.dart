@@ -21,6 +21,7 @@ class _DisplayPageState extends State<DisplayPage> {
   String? username;
   String? imageName;
   File? scannedImage;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -29,69 +30,95 @@ class _DisplayPageState extends State<DisplayPage> {
   }
 
   Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId = prefs.getString('userId');
-    if (userId != null) {
-      DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users').child(userId!);
-      DataSnapshot snapshot = await userRef.get();
-
-      if (snapshot.exists) {
-        Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
-        username = userData['username'];
-      }
-
-      String date = DateTime.now().toIso8601String().split("T")[0];
-      String time = DateTime.now()
-          .toIso8601String()
-          .split("T")[1]
-          .split(".")[0]
-          .replaceAll(":", "-");
-      imageName = '${username}_${date}_${time}.jpg';
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        userId = prefs.getString('userId');
+        if (userId != null) {
+          String date = DateTime.now().toIso8601String().split("T")[0];
+          String time = DateTime.now()
+              .toIso8601String()
+              .split("T")[1]
+              .split(".")[0]
+              .replaceAll(":", "-");
+          imageName = '${date}_${time}.jpg';
+        }
+      });
+    } catch (e) {
+      print("Error loading user data: $e");
     }
   }
 
-
   Future<void> _uploadImageToFirebase() async {
     if (userId == null || imageName == null) return;
+
+    setState(() => isLoading = true);
     try {
+      final file = File(widget.imagePath);
+      if (!await file.exists()) {
+        throw Exception('Image file not found');
+      }
+
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('history/$userId')
           .child(imageName!);
-      await storageRef.putFile(File(widget.imagePath));
+
+      await storageRef.putFile(file);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
             content: Text('Gambar berhasil diunggah ke Firebase Storage.')),
       );
     } catch (e) {
-      print("Error uploading image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengunggah gambar: ${e.toString()}')),
+      );
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
   Future<void> _scanImage() async {
+    setState(() => isLoading = true);
     try {
+      final file = File(widget.imagePath);
+      if (!await file.exists()) {
+        throw Exception('Image file not found');
+      }
+
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
             'https://modelekspresi-production.up.railway.app/detect-expression/'),
       );
+
       request.files
           .add(await http.MultipartFile.fromPath('file', widget.imagePath));
+
       final response = await request.send();
       if (response.statusCode == 200) {
         final bytes = await response.stream.toBytes();
         final tempDir = await getTemporaryDirectory();
         final file = File('${tempDir.path}/scanned_image.jpg');
         await file.writeAsBytes(bytes);
+
         setState(() {
           scannedImage = file;
         });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Scan berhasil. Gambar ditampilkan.')),
+          const SnackBar(content: Text('Scan berhasil. Gambar ditampilkan.')),
         );
+      } else {
+        throw Exception('Failed to scan image: ${response.statusCode}');
       }
     } catch (e) {
-      print("Error scanning image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memindai gambar: ${e.toString()}')),
+      );
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -108,37 +135,64 @@ class _DisplayPageState extends State<DisplayPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Tinjau Gambar')),
-      body: username == null || imageName == null
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: scannedImage != null
-                        ? Image.file(scannedImage!)
-                        : Image.file(File(widget.imagePath)),
+      appBar: AppBar(title: const Text('Tinjau Gambar')),
+      body: Stack(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: FutureBuilder<bool>(
+                    future: File(widget.imagePath).exists(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError || snapshot.data == false) {
+                        return const Center(
+                            child: Text('Gambar tidak ditemukan'));
+                      }
+
+                      return Image.file(
+                        scannedImage ?? File(widget.imagePath),
+                        fit: BoxFit.contain,
+                      );
+                    },
                   ),
                 ),
-                SizedBox(height: 20),
-                Row(
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-                      onPressed: _uploadImageToFirebase,
-                      child: Text('Simpan Gambar'),
+                      onPressed: isLoading ? null : _uploadImageToFirebase,
+                      child: const Text('Simpan Gambar'),
                     ),
                     ElevatedButton(
-                      onPressed: _scanImage,
-                      child: Text('Scan Gambar'),
+                      onPressed: isLoading ? null : _scanImage,
+                      child: const Text('Scan Gambar'),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-              ],
+              ),
+            ],
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
             ),
+        ],
+      ),
     );
   }
 }
