@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'ubahusername.dart';
 import 'ubahemail.dart';
 
@@ -60,7 +62,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
     if (_imageFile != null && userId != null) {
       try {
         final storageRef = FirebaseStorage.instance.ref().child('profile_images/$userId.jpg');
-        
+
         // Upload file ke Firebase Storage
         await storageRef.putFile(_imageFile!);
 
@@ -86,6 +88,155 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
         currentUsername = newUsername;
       });
     }
+  }
+
+  Future<void> _updatePassword(String newPassword) async {
+    if (userId != null) {
+      // Hash password sebelum disimpan
+      String hashedPassword = hashPassword(newPassword);
+      await usersRef.child(userId!).update({'password': hashedPassword});
+      setState(() {
+        currentPassword = '********'; // Display default masked password
+      });
+    }
+  }
+
+  void _changePassword() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String username = '';
+        String email = '';
+        String newPassword = '';
+        final usernameController = TextEditingController();
+        final emailController = TextEditingController();
+        final passwordController = TextEditingController();
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Column(
+            children: [
+              Icon(Icons.lock_reset, size: 40, color: Colors.pink),
+              const SizedBox(height: 10),
+              const Text(
+                'Change Password',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildTextField(
+                  controller: usernameController,
+                  labelText: 'Username',
+                  hintText: 'Enter your username',
+                  icon: Icons.person,
+                ),
+                const SizedBox(height: 10),
+                _buildTextField(
+                  controller: emailController,
+                  labelText: 'Email',
+                  hintText: 'Enter your email',
+                  icon: Icons.email,
+                ),
+                const SizedBox(height: 10),
+                _buildTextField(
+                  controller: passwordController,
+                  labelText: 'New Password',
+                  hintText: 'Enter your new password',
+                  icon: Icons.lock,
+                  obscureText: true,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pink,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              onPressed: () async {
+                username = usernameController.text.trim();
+                email = emailController.text.trim();
+                newPassword = passwordController.text.trim();
+
+                if (username.isEmpty || email.isEmpty || newPassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('All fields are required!')),
+                  );
+                  return;
+                }
+
+                DatabaseEvent event = await usersRef.child(userId!).once();
+                if (event.snapshot.value != null) {
+                  Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
+                  if (userData['username'] == username && userData['email'] == email) {
+                    await _updatePassword(newPassword);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password updated successfully!')),
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invalid username or email!')),
+                    );
+                  }
+                }
+              },
+              child: const Text(
+                'Submit',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: Colors.pink),
+        filled: true,
+        fillColor: Colors.pink[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Colors.pink),
+        ),
+        labelStyle: const TextStyle(color: Colors.grey),
+      ),
+    );
   }
 
   @override
@@ -184,6 +335,7 @@ class _UbahProfilePageState extends State<UbahProfilePage> {
             ProfileItem(
               label: 'Password',
               value: currentPassword,
+              onTap: _changePassword,
             ),
           ],
         ),
@@ -242,4 +394,11 @@ class ProfileItem extends StatelessWidget {
       ),
     );
   }
+}
+
+// Fungsi hashing password
+String hashPassword(String password) {
+  var bytes = utf8.encode(password);
+  var digest = sha256.convert(bytes);
+  return digest.toString();
 }
