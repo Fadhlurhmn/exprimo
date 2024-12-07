@@ -70,11 +70,21 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
         return;
       }
 
+        // Periksa apakah username ada
+      if (username == null || username!.isEmpty) {
+        print('Username tidak ditemukan.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mendapatkan username pengguna.')),
+        );
+        return;
+      }
+
       String date = DateTime.now().toIso8601String().split("T")[0];
       String time =
           DateTime.now().toIso8601String().split("T")[1].split(".")[0];
       time = time.replaceAll(":", "-");
-      imageName = '${date}_${time}.jpg';
+      
+      imageName = '${username}_${date}_${time}.jpg';
 
       final storageRef =
           FirebaseStorage.instance.ref().child('history/$userId/$imageName');

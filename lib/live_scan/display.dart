@@ -32,13 +32,21 @@ class _DisplayPageState extends State<DisplayPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
     if (userId != null) {
+      DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users').child(userId!);
+      DataSnapshot snapshot = await userRef.get();
+
+      if (snapshot.exists) {
+        Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
+        username = userData['username'];
+      }
+
       String date = DateTime.now().toIso8601String().split("T")[0];
       String time = DateTime.now()
           .toIso8601String()
           .split("T")[1]
           .split(".")[0]
           .replaceAll(":", "-");
-      imageName = '${date}_${time}.jpg';
+      imageName = '${username}_${date}_${time}.jpg';
     }
   }
 
