@@ -25,14 +25,57 @@ class _HomePageState extends State<HomePage> {
   String? username;
   String? userId;
   List<FirebaseFile> _allFiles = [];
+  int _totalScans = 0;
+  int _completedQuests = 0;
+  int _totalQuests = 0;
 
   @override
   void initState() {
     super.initState();
     futureFiles = _loadUserData(); // Initialize with a Future
+    _loadQuestData();
   }
 
-  // Memuat data pengguna dan mengatur folder untuk mengambil file
+  Future<void> _loadQuestData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId');
+
+    if (userId != null) {
+      final DatabaseReference userRef =
+          FirebaseDatabase.instance.ref().child('users').child(userId!);
+
+      try {
+        DatabaseEvent event = await userRef.child('expressionItems').once();
+        DataSnapshot snapshot = event.snapshot;
+
+        if (snapshot.value != null) {
+          Map<dynamic, dynamic> expressionItems =
+              Map<dynamic, dynamic>.from(snapshot.value as Map);
+
+          int completedCount = 0;
+          int totalGames = 0;
+
+          expressionItems.forEach((key, value) {
+            if (value is Map && value.containsKey('isComplete')) {
+              totalGames++;
+              if (value['isComplete'] == true) {
+                completedCount++;
+              }
+            }
+          });
+
+          setState(() {
+            _completedQuests = completedCount;
+            _totalQuests = totalGames;
+          });
+        }
+      } catch (e) {
+        print('Error loading quest data: $e');
+      }
+    }
+  }
+
+  // Modified to also update the total scan count
   Future<List<FirebaseFile>> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
@@ -41,11 +84,87 @@ class _HomePageState extends State<HomePage> {
       List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
       setState(() {
         _allFiles = files;
+        _totalScans = files.length; // Update total scans count
       });
       return files;
     } else {
-      throw Exception('User not logged in');
+      throw Exception('User not logged in');
     }
+  }
+
+  // Add method to refresh the count
+  Future<void> refreshImageCount() async {
+    if (userId != null) {
+      List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
+      setState(() {
+        _totalScans = files.length;
+      });
+    }
+  }
+
+  // Modify the statistics card to show the count
+  Widget buildStatisticsCard() {
+    return Container(
+      child: Row(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Column(
+              children: <Widget>[
+                Text('Jumlah Hasil Scan'),
+                SizedBox(height: 8),
+                Text(
+                  '$_totalScans',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Column(
+              children: <Widget>[
+                Text('Quest yang Terselesaikan'),
+                SizedBox(height: 8),
+                Text(
+                  '$_completedQuests/$_totalQuests',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<String> getUploadTime(String fileUrl) async {
@@ -206,125 +325,24 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 children: <Widget>[
+                  // Container(
+                  //   child: Image.asset('assets/images/poster.jpg'),
+                  // ),
                   SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
-                        'Ayo Lanjutkan Permainanmu🔥🔥',
+                        'Statistik',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                   SizedBox(height: 10),
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              width: 70,
-                              height: 70,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.grey[300]!,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Image.asset(
-                                'assets/images/image_marah.png',
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Ekspresi Marah',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                    fontFamily: 'Nunito',
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Tingkat kesulitan : Mudah',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                    fontFamily: 'Nunito',
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 4, horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFE57373),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    'Incomplete',
-                                    style: TextStyle(
-                                      fontFamily: 'Nunito',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Color(0xFFD19F9F),
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CameraScreen(
-                                    expressionItem: ExpressionItem(
-                                        'Senang', 'Mudah', false),
-                                  ),
-                                ),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.play_arrow,
-                              color: Colors.white,
-                              size: 34,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  buildStatisticsCard(),
                   SizedBox(height: 10),
                   // Riwayat Section
                   Align(
