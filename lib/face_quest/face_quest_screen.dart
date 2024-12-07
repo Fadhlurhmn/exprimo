@@ -298,7 +298,7 @@ class ExpressionItem {
 }
 
 class CameraScreen extends StatefulWidget {
-  final ExpressionItem expressionItem; // Tambahkan parameter ini
+  final ExpressionItem expressionItem;
 
   const CameraScreen({Key? key, required this.expressionItem})
       : super(key: key);
@@ -310,7 +310,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late List<CameraDescription> cameras;
   CameraController? _controller;
-  int _selectedCameraIndex = 0;
+  int _selectedCameraIndex = 1;
   File? _capturedImage;
 
   @override
@@ -350,17 +350,18 @@ class _CameraScreenState extends State<CameraScreen> {
     _setCamera(_selectedCameraIndex);
   }
 
-  Future<void> _captureImage() async {
+  Future<void> _captureAndDetectExpression() async {
     if (!_controller!.value.isInitialized) {
       return;
     }
     try {
+      // Tangkap gambar
       final image = await _controller!.takePicture();
       setState(() {
         _capturedImage = File(image.path);
       });
 
-      // Mengirim gambar ke server untuk deteksi
+      // Kirim gambar ke server dan deteksi ekspresi
       String? detectedExpression = await _detectExpression(_capturedImage!);
 
       if (detectedExpression == null) {
@@ -374,19 +375,111 @@ class _CameraScreenState extends State<CameraScreen> {
       bool isExpressionMatched = detectedExpression.toLowerCase() ==
           widget.expressionItem.name.toLowerCase();
 
+      if (isExpressionMatched) {
+        final prefs = await SharedPreferences.getInstance();
+        String userId = prefs.getString('userId') ?? ""; // Ambil userId
+        String gameName = widget.expressionItem.name;
+
+        if (userId.isEmpty) {
+          print('User ID is empty. Cannot update database.');
+          return; // Berhenti jika userId kosong
+        }
+
+        final databaseReference = FirebaseDatabase.instance.ref();
+        try {
+          // Cari node dengan nama game yang sesuai
+          final snapshot = await databaseReference
+              .child('users')
+              .child(userId)
+              .child('expressionItems')
+              .get();
+
+          if (snapshot.exists) {
+            for (final child in snapshot.children) {
+              final data = child.value as Map?;
+              if (data != null && data['name'] == gameName) {
+                // Update node dengan gameName yang sesuai
+                await databaseReference
+                    .child('users')
+                    .child(userId)
+                    .child('expressionItems')
+                    .child(child.key!)
+                    .update({'isComplete': true});
+                print('Updated game "$gameName" to complete.');
+              }
+            }
+          }
+
+          print('Game "$gameName" not found.');
+        } catch (e) {
+          print('Error updating game completion status: $e');
+        }
+      }
+
+
+      // Navigasi ke layar hasil
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ExpressionResultScreen(
             imageFile: _capturedImage!,
             detectedExpression: detectedExpression,
             expectedExpression: widget.expressionItem.name,
-            isMatched:
-                isExpressionMatched, // Kirim hasil evaluasi ke layar berikutnya
+            isMatched: isExpressionMatched,
+            onRetry: () {
+              // Navigasi ulang ke CameraScreen
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => CameraScreen(
+                    expressionItem: ExpressionItem(
+                      widget.expressionItem.name,
+                      widget.expressionItem.difficulty,
+                      false, // Sesuaikan nilai ini jika diperlukan
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       );
     } catch (e) {
-      print('Error capturing image: $e');
+      print('Error capturing or detecting expression: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<String?> _detectExpression(File imageFile) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+            'https://modelekspresi-production.up.railway.app/get-expression-label/'),
+      );
+      request.files
+          .add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final jsonResponse = jsonDecode(responseBody);
+
+        // Periksa respons untuk key 'emotions'
+        if (jsonResponse.containsKey('emotions') &&
+            jsonResponse['emotions'] is List) {
+          final emotions = jsonResponse['emotions'] as List;
+          return emotions.isNotEmpty ? emotions[0] : 'Unknown';
+        } else {
+          return null; // Format respons tidak valid
+        }
+      } else {
+        return null; // Status code gagal
+      }
+    } catch (e) {
+      print('Error detecting expression: $e');
+      return null;
     }
   }
 
@@ -407,7 +500,7 @@ class _CameraScreenState extends State<CameraScreen> {
             flex: 1,
             child: Center(
               child: Image.asset(
-                'assets/images/${widget.expressionItem.name}.jpg', // Gunakan gambar sesuai ekspresi
+                'assets/images/${widget.expressionItem.name}.jpg',
                 width: 100,
                 height: 100,
               ),
@@ -423,10 +516,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       ? Transform(
                           alignment: Alignment.center,
                           transform: Matrix4.identity()
-                            ..scale(
-                              isFrontCamera ? -1.0 : 1.0,
-                              1.0,
-                            ),
+                            ..scale(isFrontCamera ? -1.0 : 1.0, 1.0),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: CameraPreview(_controller!),
@@ -445,39 +535,33 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: _captureImage,
+            onPressed: _captureAndDetectExpression,
             style: ElevatedButton.styleFrom(
               shape: CircleBorder(),
-              padding:
-                  EdgeInsets.all(0), // Tidak ada jarak tambahan untuk padding
-              backgroundColor: Colors.transparent, // Latar belakang transparan
-              shadowColor: Colors.transparent, // Tanpa bayangan
+              padding: EdgeInsets.all(0),
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
             ),
             child: Container(
-              width: 80, // Ukuran total lingkaran
+              width: 80,
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.pink.shade100,
-                    Colors.white
-                  ], // Efek gradien warna
+                  colors: [Colors.pink.shade100, Colors.white],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(
-                    color: Colors.black, width: 1), // Garis lingkaran luar
+                border: Border.all(color: Colors.black, width: 1),
               ),
               child: Center(
                 child: Container(
-                  width: 60, // Ukuran lingkaran dalam
+                  width: 60,
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white, // Warna lingkaran dalam
-                    border: Border.all(
-                        color: Colors.black, width: 1), // Garis lingkaran dalam
+                    color: Colors.white,
+                    border: Border.all(color: Colors.black, width: 1),
                   ),
                 ),
               ),
@@ -491,33 +575,9 @@ class _CameraScreenState extends State<CameraScreen> {
       ),
     );
   }
+}
 
-  Future<String?> _detectExpression(File imageFile) async {
-    try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('http://192.168.62.249:8006/get-expression-label/'),
-      );
-      request.files.add(await http.MultipartFile.fromPath(
-        'file', // Sesuaikan dengan parameter file yang diterima server
-        imageFile.path,
-      ));
 
-      final response = await request.send();
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        final jsonResponse = jsonDecode(responseBody);
-        return jsonResponse['detected_expression']
-            as String; // Pastikan key sesuai dengan API Anda
-      } else {
-        print('Failed to detect expression: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      print('Error detecting expression: $e');
-      return null;
-    }
-  }
 
   // void _navigateToResultScreen() async {
   //   if (!_controller!.value.isInitialized) {
@@ -545,4 +605,3 @@ class _CameraScreenState extends State<CameraScreen> {
   //     print('Error capturing image: $e');
   //   }
   // }
-}

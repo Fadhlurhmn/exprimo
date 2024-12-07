@@ -1,3 +1,4 @@
+//import_foto/display.dart
 import 'dart:io';
 import 'package:exprimo/constants.dart';
 import 'package:exprimo/navigation.dart';
@@ -64,13 +65,19 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
 
   Future<void> _uploadImageToFirebase() async {
     try {
-      if (username == null || widget.imagePath.isEmpty) {
-        print('Username atau path gambar tidak valid.');
+      if (userId == null || widget.imagePath.isEmpty) {
+        print('UserId atau path gambar tidak valid.');
         return;
       }
 
+      String date = DateTime.now().toIso8601String().split("T")[0];
+      String time =
+          DateTime.now().toIso8601String().split("T")[1].split(".")[0];
+      time = time.replaceAll(":", "-");
+      imageName = '${date}_${time}.jpg';
+
       final storageRef =
-          FirebaseStorage.instance.ref().child('history/$username/$imageName');
+          FirebaseStorage.instance.ref().child('history/$userId/$imageName');
       await storageRef.putFile(File(widget.imagePath));
 
       print("Gambar asli berhasil di-upload.");
@@ -82,15 +89,16 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
     }
   }
 
+
   Future<void> _uploadProcessedImageToFirebase() async {
     try {
-      if (username == null || processedImage == null) {
-        print('Username atau processedImage tidak valid.');
+      if (userId == null || processedImage == null) {
+        print('UserId atau processedImage tidak valid.');
         return;
       }
 
       final storageRef =
-          FirebaseStorage.instance.ref().child('history/$username/$imageName');
+          FirebaseStorage.instance.ref().child('history/$userId/$imageName');
       await storageRef.putFile(processedImage!);
 
       print("Gambar hasil bounding box berhasil di-upload.");
@@ -111,7 +119,7 @@ class _DisplayImagePageState extends State<DisplayImagePage> {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            'http://192.168.73.135:8005/detect-expression/'), // URL API Anda
+            'https://modelekspresi-production.up.railway.app/detect-expression/'), // URL API Anda
       );
       request.files
           .add(await http.MultipartFile.fromPath('file', widget.imagePath));

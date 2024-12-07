@@ -87,21 +87,21 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Padding( 
-                padding: EdgeInsets.only(top: size.height * 0.01, left: size.width * 0.05),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.black, size: size.width * 0.06),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => WelcomeScreen()),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              // Padding( 
+              //   padding: EdgeInsets.only(top: size.height * 0.01, left: size.width * 0.05),
+              //   child: Align(
+              //     alignment: Alignment.topLeft,
+              //     child: IconButton(
+              //       icon: Icon(Icons.arrow_back, color: Colors.black, size: size.width * 0.06),
+              //       onPressed: () {
+              //         Navigator.pushReplacement(
+              //           context,
+              //           MaterialPageRoute(builder: (context) => WelcomeScreen()),
+              //         );
+              //       },
+              //     ),
+              //   ),
+              // ),
               
               // Background section
               Container(
