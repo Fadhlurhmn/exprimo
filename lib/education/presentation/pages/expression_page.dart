@@ -1,4 +1,4 @@
-// lib/features/expressions/presentation/pages/expressions_page.dart
+// education/presentation/pages/expressions_page.dart
 import 'package:flutter/material.dart';
 import '../widgets/expression_card.dart';
 import '../widgets/expression_detail.dart';
