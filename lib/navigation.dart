@@ -1,3 +1,4 @@
+import 'package:exprimo/education/presentation/pages/expression_page.dart';
 import 'package:flutter/material.dart';
 import 'package:exprimo/homepage_screen.dart';
 import 'package:exprimo/files/file_screen.dart';
@@ -14,8 +15,8 @@ class _BottomNavExampleState extends State<Navigation_menu> {
   // Daftar halaman yang akan ditampilkan berdasarkan item yang dipilih di BottomNavigationBar
   static List<Widget> _pages = <Widget>[
     HomePage(),
-    
     FilesPage(),
+    ExpressionsPage(),
     ProfilePage(),
   ];
 
@@ -45,6 +46,10 @@ class _BottomNavExampleState extends State<Navigation_menu> {
           BottomNavigationBarItem(
             icon: Icon(Icons.folder),
             label: 'Files',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Education',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
