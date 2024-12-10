@@ -82,6 +82,24 @@ class _HomePageState extends State<HomePage> {
 
     if (userId != null) {
       List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
+      
+      // Sort files by upload time
+      await Future.wait(files.map((file) async {
+        try {
+          final metadata = await file.ref.getMetadata();
+          file.uploadTime = metadata.timeCreated;
+        } catch (e) {
+          print('Error getting upload time: $e');
+          file.uploadTime = DateTime(1970); // Default to oldest time if error
+        }
+      }));
+      
+      files.sort((a, b) {
+        DateTime timeA = a.uploadTime ?? DateTime(1970);
+        DateTime timeB = b.uploadTime ?? DateTime(1970);
+        return timeB.compareTo(timeA);
+      });
+
       setState(() {
         _allFiles = files;
         _totalScans = files.length; // Update total scans count
@@ -373,22 +391,23 @@ class _HomePageState extends State<HomePage> {
                     child: FutureBuilder<List<FirebaseFile>>(
                       future: futureFiles,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return CircularProgressIndicator();
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return Text('Tidak ada file untuk ditampilkan');
                         }
 
-                        // Menampilkan daftar file
+                        // Limit to top 5 files
+                        List<FirebaseFile> topFiles = _allFiles.take(5).toList();
+
                         return ListView.builder(
                           shrinkWrap: true,
-                          itemCount: _allFiles.length,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: topFiles.length,
                           itemBuilder: (context, index) {
-                            final file = _allFiles[index];
+                            final file = topFiles[index];
                             return buildFileItem(file);
                           },
                         );
@@ -407,8 +426,7 @@ class _HomePageState extends State<HomePage> {
   Widget buildFileItem(FirebaseFile file) {
     return ListTile(
       leading: ClipRRect(
-        borderRadius: BorderRadius.circular(
-            10), // Atur nilai sesuai kebutuhan untuk pembulatan sudut
+        borderRadius: BorderRadius.circular(10),
         child: Image.network(
           file.url,
           width: 70,
@@ -417,23 +435,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       title: Text(file.name),
-
-      subtitle: FutureBuilder<String>(
-        future: getUploadTime(file.url),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('Loading...');
-          } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          } else {
-            return Text('${snapshot.data}');
-          }
-        },
-      ),
-      // trailing: IconButton(
-      //   icon: Icon(Icons.delete),
-      //   onPressed: () => _showDeleteConfirmationDialog(file),
-      // ),
+      subtitle: file.uploadTime != null
+          ? Text(DateFormat('yyyy-MM-dd HH:mm').format(file.uploadTime!))
+          : Text('Unknown time'),
     );
   }
 }
