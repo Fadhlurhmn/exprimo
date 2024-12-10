@@ -41,15 +41,30 @@ class _FilesPageState extends State<FilesPage> {
 
     if (userId != null) {
       List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
+
+      // Tambahkan logika pengambilan waktu upload untuk pengurutan
+      List<Map<String, dynamic>> filesWithTime = await Future.wait(files.map((file) async {
+        String uploadTimeStr = await getUploadTime(file.url);
+        DateTime uploadTime = DateFormat('yyyy-MM-dd HH:mm').parse(uploadTimeStr);
+        return {'file': file, 'time': uploadTime};
+      }));
+
+      // Urutkan file berdasarkan waktu terbaru
+      filesWithTime.sort((a, b) => b['time'].compareTo(a['time']));
+
+      // Konversi kembali menjadi list FirebaseFile
+      files = filesWithTime.map((entry) => entry['file'] as FirebaseFile).toList();
+
       setState(() {
         _allFiles = files;
         _filteredFiles = files;
       });
       return files;
     } else {
-      throw Exception('User not loggedin');
+      throw Exception('User not logged in');
     }
   }
+
 
   Future<String> getUploadTime(String fileUrl) async {
     try {
