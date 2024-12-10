@@ -4,12 +4,12 @@ class FirebaseFile {
   final Reference ref;
   final String name;
   final String url;
+  DateTime? uploadTime;
 
-  const FirebaseFile({
+  FirebaseFile({
     required this.ref,
     required this.name,
     required this.url,
+    this.uploadTime,
   });
-
-  get uploadTime => null;
 }
