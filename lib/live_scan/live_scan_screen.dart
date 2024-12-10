@@ -105,61 +105,51 @@ class _LiveScanPageState extends State<LiveScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _isCameraInitialized
-          ? Stack(
-              children: [
-                Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 3),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.width *
-                              _controller!.value.aspectRatio,
-                          child: Transform(
-                            alignment: Alignment.center,
-                            transform: Matrix4.rotationY(math.pi),
-                            child: CameraPreview(_controller!),
-                          ),
-                        ),
+      body: SafeArea(
+        child: _isCameraInitialized
+            ? Column(
+                children: [
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: _controller!.value.aspectRatio,
+                      child: Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.rotationY(math.pi),
+                        child: CameraPreview(_controller!),
                       ),
                     ),
-                    SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.camera,
-                            size: 50,
-                            color: Colors.black,
-                          ),
-                          onPressed: _takePicture,
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.camera,
+                          size: 50,
+                          color: Colors.black,
                         ),
-                        IconButton(
-                          icon: Icon(
-                            _selectedCameraIndex == 0
-                                ? Icons.camera_front
-                                : Icons.camera_rear,
-                            size: 50,
-                            color: Colors.black,
-                          ),
-                          onPressed: _toggleCamera,
+                        onPressed: _takePicture,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _selectedCameraIndex == 0
+                              ? Icons.camera_front
+                              : Icons.camera_rear,
+                          size: 50,
+                          color: Colors.black,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : Center(
-              child: CircularProgressIndicator(),
-            ),
+                        onPressed: _toggleCamera,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                ],
+              )
+            : Center(
+                child: CircularProgressIndicator(),
+              ),
+      ),
     );
   }
 }

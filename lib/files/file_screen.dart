@@ -35,7 +35,7 @@ class _FilesPageState extends State<FilesPage> {
     futureFiles = _loadUserData();
   }
 
-   Future<List<FirebaseFile>> _loadUserData() async {
+  Future<List<FirebaseFile>> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
 
@@ -47,7 +47,7 @@ class _FilesPageState extends State<FilesPage> {
       });
       return files;
     } else {
-      throw Exception('User not logged in');
+      throw Exception('User not loggedin');
     }
   }
 
@@ -286,8 +286,10 @@ class _FilesPageState extends State<FilesPage> {
                         try {
                           // Unduh file dari Firebase Storage
                           final tempDir = await getTemporaryDirectory();
-                          final filePath = '${tempDir.path}/${file.name}'; // Simpan sementara
-                          final ref = FirebaseStorage.instance.refFromURL(file.url);
+                          final filePath =
+                              '${tempDir.path}/${file.name}'; // Simpan sementara
+                          final ref =
+                              FirebaseStorage.instance.refFromURL(file.url);
                           final fileLocal = File(filePath);
 
                           // Unduh data ke file lokal
@@ -317,7 +319,6 @@ class _FilesPageState extends State<FilesPage> {
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
-
                     SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
