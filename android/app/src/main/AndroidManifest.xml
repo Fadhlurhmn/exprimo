@@ -14,7 +14,7 @@
             android:resource="@xml/file_paths" />
     </provider> -->
     <application
-        android:label="exprimo"
+        android:label="Exprimo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

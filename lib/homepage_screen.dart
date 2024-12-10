@@ -82,7 +82,7 @@ class _HomePageState extends State<HomePage> {
 
     if (userId != null) {
       List<FirebaseFile> files = await FirebaseApi.listAll('history/$userId/');
-      
+
       // Sort files by upload time
       await Future.wait(files.map((file) async {
         try {
@@ -93,7 +93,7 @@ class _HomePageState extends State<HomePage> {
           file.uploadTime = DateTime(1970); // Default to oldest time if error
         }
       }));
-      
+
       files.sort((a, b) {
         DateTime timeA = a.uploadTime ?? DateTime(1970);
         DateTime timeB = b.uploadTime ?? DateTime(1970);
@@ -122,62 +122,79 @@ class _HomePageState extends State<HomePage> {
 
   // Modify the statistics card to show the count
   Widget buildStatisticsCard() {
-    return Container(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Column(
-              children: <Widget>[
-                Text('Jumlah Hasil Scan'),
-                SizedBox(height: 8),
-                Text(
-                  '$_totalScans',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(right: 8.0), // Jarak antar card
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 8,
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    'Jumlah Hasil Scan',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '$_totalScans',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(width: 10),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Column(
-              children: <Widget>[
-                Text('Quest yang Terselesaikan'),
-                SizedBox(height: 8),
-                Text(
-                  '$_completedQuests/$_totalQuests',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(left: 8.0), // Jarak antar card
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 8,
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    'Quest Terselesaikan',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '$_completedQuests/$_totalQuests',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -391,16 +408,19 @@ class _HomePageState extends State<HomePage> {
                     child: FutureBuilder<List<FirebaseFile>>(
                       future: futureFiles,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return CircularProgressIndicator();
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
                           return Text('Tidak ada file untuk ditampilkan');
                         }
 
                         // Limit to top 5 files
-                        List<FirebaseFile> topFiles = _allFiles.take(5).toList();
+                        List<FirebaseFile> topFiles =
+                            _allFiles.take(5).toList();
 
                         return ListView.builder(
                           shrinkWrap: true,
