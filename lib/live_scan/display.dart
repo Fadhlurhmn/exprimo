@@ -83,16 +83,24 @@ class _DisplayPageState extends State<DisplayPage> {
   }
 
   @override
+  void dispose() {
+    // Hapus file setelah selesai ditampilkan
+    if (!widget.processedImagePath.contains('firebase')) {
+      File(widget.processedImagePath)
+          .delete()
+          .catchError((e) => print('Error deleting processed file: $e'));
+    }
+    File(widget.originalImagePath)
+        .delete()
+        .catchError((e) => print('Error deleting original file: $e'));
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                Navigation_menu(), // Ganti dengan widget Navigation_menu
-          ),
-        );
+        Navigator.pop(context);
         return false;
       },
       child: Scaffold(
@@ -101,13 +109,7 @@ class _DisplayPageState extends State<DisplayPage> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Navigation_menu(), // Ganti dengan widget Navigation_menu
-                ),
-              );
+              Navigator.pop(context);
             },
           ),
         ),

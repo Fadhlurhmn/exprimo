@@ -13,25 +13,42 @@ class LiveScanPage extends StatefulWidget {
   _LiveScanPageState createState() => _LiveScanPageState();
 }
 
-class _LiveScanPageState extends State<LiveScanPage> {
+class _LiveScanPageState extends State<LiveScanPage>
+    with WidgetsBindingObserver {
   late List<CameraDescription> cameras;
   CameraController? _controller;
   int _selectedCameraIndex = 1;
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
-  String? _tempImagePath; // Added to store temporary image path
+  String? _tempImagePath;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final CameraController? cameraController = _controller;
+
+    if (cameraController == null || !cameraController.value.isInitialized) {
+      return;
+    }
+
+    if (state == AppLifecycleState.inactive) {
+      cameraController.dispose();
+    } else if (state == AppLifecycleState.resumed) {
+      _initializeCamera();
+    }
   }
 
   Future<void> _initializeCamera() async {
     try {
       cameras = await availableCameras();
       if (cameras.isNotEmpty) {
-        _setCamera(_selectedCameraIndex);
+        await _setCamera(_selectedCameraIndex);
       } else {
         print('No cameras found');
       }
@@ -40,7 +57,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
     }
   }
 
-  void _setCamera(int cameraIndex) async {
+  Future<void> _setCamera(int cameraIndex) async {
     if (_controller != null) {
       await _controller!.dispose();
     }
@@ -48,6 +65,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
     _controller = CameraController(
       cameras[cameraIndex],
       ResolutionPreset.high,
+      imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
     try {
@@ -61,14 +79,28 @@ class _LiveScanPageState extends State<LiveScanPage> {
     }
   }
 
+  Future<void> _cleanupFiles() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final dir = Directory(tempDir.path);
+      await for (final file in dir.list()) {
+        if (file.path.contains('processed_image_') ||
+            file.path.contains('CapturedImages')) {
+          await file.delete();
+        }
+      }
+    } catch (e) {
+      print('Error cleaning up files: $e');
+    }
+  }
+
   Future<void> _processAndNavigate(String imagePath) async {
     setState(() {
       _isProcessing = true;
-      _tempImagePath = imagePath; // Store the temporary image path
+      _tempImagePath = imagePath;
     });
 
     try {
-      // Send image to API
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
@@ -80,13 +112,27 @@ class _LiveScanPageState extends State<LiveScanPage> {
       if (response.statusCode == 200) {
         final bytes = await response.stream.toBytes();
         final tempDir = await getTemporaryDirectory();
-        final processedFile = File('${tempDir.path}/processed_image.jpg');
+
+        // Generate unique filename untuk setiap hasil processed
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final processedFile =
+            File('${tempDir.path}/processed_image_$timestamp.jpg');
+
+        // Hapus file processed lama jika ada
+        final dir = Directory(tempDir.path);
+        await for (final file in dir.list()) {
+          if (file.path.contains('processed_image_') &&
+              file.path != processedFile.path) {
+            await file.delete();
+          }
+        }
+
         await processedFile.writeAsBytes(bytes);
 
         if (!mounted) return;
 
-        // Navigate to display page with both original and processed images
-        await Navigator.pushReplacement(
+        // Navigate dengan file baru
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => DisplayPage(
@@ -94,7 +140,17 @@ class _LiveScanPageState extends State<LiveScanPage> {
               processedImagePath: processedFile.path,
             ),
           ),
-        );
+        ).then((_) async {
+          // Setelah kembali dari DisplayPage
+          if (mounted) {
+            try {
+              await _cleanupFiles();
+              await _initializeCamera(); // Reinisialisasi kamera
+            } catch (e) {
+              print('Error after navigation: $e');
+            }
+          }
+        });
       } else {
         throw Exception('Failed to process image: ${response.statusCode}');
       }
@@ -109,6 +165,13 @@ class _LiveScanPageState extends State<LiveScanPage> {
         setState(() {
           _isProcessing = false;
         });
+      }
+      // Hapus file captured original jika ada
+      if (_tempImagePath != null) {
+        File(_tempImagePath!)
+            .delete()
+            .catchError((e) => print('Error deleting temp file: $e'));
+        _tempImagePath = null;
       }
     }
   }
@@ -151,13 +214,9 @@ class _LiveScanPageState extends State<LiveScanPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller?.dispose();
-    // Clean up temporary images
-    if (_tempImagePath != null) {
-      File(_tempImagePath!)
-          .delete()
-          .catchError((e) => print('Error deleting temp file: $e'));
-    }
+    _cleanupFiles(); // Tambahkan cleanup saat dispose
     super.dispose();
   }
 
@@ -165,7 +224,7 @@ class _LiveScanPageState extends State<LiveScanPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Reset camera when going back
+        await _cleanupFiles();
         await _initializeCamera();
         return true;
       },
