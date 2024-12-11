@@ -13,7 +13,8 @@ class ImagePage extends StatelessWidget {
     required this.file,
   });
 
-  Future<void> downloadImage(BuildContext context, String url, String fileName) async {
+  Future<void> downloadImage(
+      BuildContext context, String url, String fileName) async {
     try {
       // Unduh gambar dari URL
       final response = await http.get(Uri.parse(url));
@@ -66,7 +67,8 @@ class ImagePage extends StatelessWidget {
                   child: Image.network(
                     file.url, // URL gambar dari Firebase
                     width: MediaQuery.of(context).size.width * 0.7,
-                    height: MediaQuery.of(context).size.height * 0.7, // Tinggi gambar 70% dari tinggi layar
+                    height: MediaQuery.of(context).size.height *
+                        0.7, // Tinggi gambar 70% dari tinggi layar
                     fit: BoxFit.contain, // Gambar akan tetap proporsional
                   ),
                 )
@@ -79,42 +81,42 @@ class ImagePage extends StatelessWidget {
                 ),
           SizedBox(height: 10),
           // Tombol untuk mendownload gambar (Firebase API)
-          Container(
-            width: 300,
-            child: ElevatedButton(
-              onPressed: () async {
-                await FirebaseApi.downloadFile(file.ref);
+          // Container(
+          //   width: 300,
+          //   child: ElevatedButton(
+          //     onPressed: () async {
+          //       await FirebaseApi.downloadFile(file.ref);
 
-                final snackBar = SnackBar(
-                  content: Text('Downloaded ${file.name}'),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF5DADA), // Warna latar belakang tombol
-                foregroundColor: Colors.black, // Warna teks tombol
-                padding: EdgeInsets.symmetric(vertical: 20), // Padding vertikal tombol
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // Membuat tombol dengan sudut rounded
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(width: 8),
-                  Text(
-                    'Download Gambar', // Label tombol
-                    style: TextStyle(
-                      color: Colors.black, // Warna teks tombol
-                      fontSize: 24, // Ukuran font
-                      fontFamily: 'Roboto', // Jenis font
-                      fontWeight: FontWeight.w700, // Ketebalan font
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          //       final snackBar = SnackBar(
+          //         content: Text('Downloaded ${file.name}'),
+          //       );
+          //       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          //     },
+          //     style: ElevatedButton.styleFrom(
+          //       backgroundColor: Color(0xFFF5DADA), // Warna latar belakang tombol
+          //       foregroundColor: Colors.black, // Warna teks tombol
+          //       padding: EdgeInsets.symmetric(vertical: 20), // Padding vertikal tombol
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(20), // Membuat tombol dengan sudut rounded
+          //       ),
+          //     ),
+          //     child: Row(
+          //       mainAxisSize: MainAxisSize.min,
+          //       children: [
+          //         SizedBox(width: 8),
+          //         Text(
+          //           'Download Gambar', // Label tombol
+          //           style: TextStyle(
+          //             color: Colors.black, // Warna teks tombol
+          //             fontSize: 24, // Ukuran font
+          //             fontFamily: 'Roboto', // Jenis font
+          //             fontWeight: FontWeight.w700, // Ketebalan font
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           SizedBox(height: 10),
           // Tombol untuk mendownload gambar (Custom API)
           ElevatedButton(
